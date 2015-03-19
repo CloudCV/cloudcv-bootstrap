@@ -1,0 +1,185 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "CloudCV API",
+        "description": "Move your app forward with the Uber API",
+        "version": "1.0.0"
+    },
+    "host": "cloudcv.io",
+    "basePath": "/api/v1",
+    "schemes": [
+        "https"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "securityDefinitions": {
+        "token": {
+            "type": "apiKey",
+            "name": "api_key",
+            "in": "header"
+        }
+    },
+    "paths": {
+        "/image/analyze/dominantColors": {
+            "get": {
+                "operationId": "getDominantColors",
+                "summary": "Analyzes basic properties of the image",
+                "description": "This endpoint can extract dominant colors from the image and return them \nas a JSON response.\n",
+                "parameters": [
+                    {
+                        "name": "image",
+                        "in": "query",
+                        "description": "Image file of supported format to analyze. Currently we suport png, jpg, bmp formats. Enpoint will download it from specified \npath and analyze.\n",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "AnalyzeImage"
+                ],
+                "security": [
+                    {
+                        "token": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "An array of products",
+                        "schema": {
+                            "$ref": "#/definitions/AnalyzeImageResponse"
+                        }
+                    },
+                    "413": {
+                        "description": "Requested image too large",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "operationId": "postDominantColors",
+                "summary": "Analyzes basic properties of the image",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "description": "This endpoint can extract dominant colors from the image and return them \nas a JSON response.\n",
+                "parameters": [
+                    {
+                        "name": "image",
+                        "in": "formData",
+                        "description": "Encoded image data. Currently we suport png, jpg, bmp formats.\n",
+                        "required": true,
+                        "type": "file"
+                    }
+                ],
+                "tags": [
+                    "AnalyzeImage"
+                ],
+                "security": [
+                    {
+                        "token": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dominant colors and basic image properties.",
+                        "schema": {
+                            "$ref": "#/definitions/AnalyzeImageResponse"
+                        }
+                    },
+                    "413": {
+                        "description": "Requested image too large",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Color": {
+            "properties": {
+                "red": {
+                    "description": "Red component intensity (0..255)",
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "green": {
+                    "description": "Green component intensity (0..255)",
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "blue": {
+                    "description": "Blue component intensity (0..255)",
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "html": {
+                    "description": "HTML string color representation",
+                    "type": "string"
+                }
+            },
+            "xml": {
+                "name": "Color"
+            }
+        },
+        "DominantColor": {
+            "properties": {
+                "value": {
+                    "description": "Dominant color value",
+                    "schema": {
+                        "$ref": "#/definitions/Color"
+                    }
+                },
+                "amount": {
+                    "description": "Color amount in percents of entire image",
+                    "type": "number",
+                    "format": "float"
+                }
+            },
+            "xml": {
+                "name": "DominantColor"
+            }
+        },
+        "AnalyzeImageResponse": {
+            "properties": {
+                "colors": {
+                    "description": "Dominant colors",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/DominantColor"
+                    }
+                }
+            },
+            "xml": {
+                "name": "AnalyzeImageResponse"
+            }
+        },
+        "Error": {
+            "properties": {
+                "message": {
+                    "description": "Human-friendlty error description",
+                    "type": "string"
+                }
+            },
+            "xml": {
+                "name": "Error"
+            }
+        }
+    }
+}
