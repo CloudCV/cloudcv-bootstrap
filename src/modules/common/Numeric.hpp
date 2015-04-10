@@ -15,7 +15,8 @@
 
 #include <opencv2/opencv.hpp>
 #include <stdint.h>
-
+#include "framework/marshal/marshal.hpp"
+ 
 namespace cloudcv
 {
     size_t gcd(size_t u, size_t v);

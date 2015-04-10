@@ -5,7 +5,6 @@
 #include <iostream>
 #include <iterator>
 #include <opencv2/opencv.hpp>
-#include <modules/analyze/dominantColors.hpp>
 
 struct FunctionTraceLoggerCookie
 {
@@ -36,16 +35,6 @@ inline std::ostream& operator<<(std::ostream& out, const std::array<T, Size>& v)
     return out;
 }
 
-/*
-inline std::ostream& operator<<(std::ostream& out, const cv::Mat& res) {
-    return out << "cv::Mat [ ... ]";
-}
-/*
-template <typename T>
-inline std::ostream& operator<<(std::ostream& out, const cv::Size_<T>& res) {
-    return out << "cv::Size { width:" << res.width << ", height:" << res.height << "}";
-}
-*/
 template <typename T>
 inline std::ostream& operator<<(std::ostream& out, const cv::Rect_<T>& res) {
     return out << "cv::Rect { x:" << res.x << "; y:" << res.y << ", width:" << res.width << ", height:" << res.height << "}";

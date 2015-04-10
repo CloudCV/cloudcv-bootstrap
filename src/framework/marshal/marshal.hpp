@@ -58,12 +58,28 @@ namespace cloudcv
         {
             const char * name;
             T& value;
+
+            explicit nvp_struct(const char * name_, T & value_) 
+                : name(name_)
+                , value(value_)        
+            {}
+
+            nvp_struct(const nvp_struct & rhs) 
+                : name(rhs.name)
+                , value(rhs.value)        
+            {}
         };
 
         template <typename T>
         inline nvp_struct<T> make_nvp(const char * name, T& val)
         {
-            return std::move( nvp_struct<T> { name, val } );
+            return nvp_struct<T>( name, val );
+        }
+
+        template <typename T>
+        inline nvp_struct<T> make_nvp(const char * name, const T& val)
+        {
+            return nvp_struct<T>( name, const_cast<T&>(val) );
         }
 
         template<typename Archive, typename T>
@@ -146,12 +162,12 @@ namespace cloudcv
             static inline void load(InputArchive& ar, std::vector<T>& val)
             {
                 TRACE_FUNCTION;
-                int N = ar.As<v8::Array>()->Length();
+                int N = ar.template As<v8::Array>()->Length();
 
                 val.resize(N);
                 for (int i = 0; i < N; i++)
                 {
-                    V8Result item = ar.As<v8::Array>()->Get(i);
+                    V8Result item = ar.template As<v8::Array>()->Get(i);
                     val[i] = marshal<T>(item);
                 }
             }
@@ -215,10 +231,10 @@ namespace cloudcv
             static inline void load(InputArchive& ar, std::map<K, V>& map_val)
             {
                 TRACE_FUNCTION;
-                int N = ar.As<v8::Array>()->Length();
+                int N = ar.template As<v8::Array>()->Length();
                 for (int i = 0; i < N; i++)
                 {
-                    V8Result item = ar.As<v8::Array>()->Get(i);
+                    V8Result item = ar.template As<v8::Array>()->Get(i);
                     map_val.insert( marshal< std::pair<K,V> >(item) );
                 }
             }
@@ -226,7 +242,7 @@ namespace cloudcv
             template<typename OutputArchive>
             static inline void save(OutputArchive& ar, const std::map<K, V>& map_val)
             {
-                Local<Array> result = NanNew<Array>();
+                v8::Local<v8::Array> result = NanNew<v8::Array>();
                 for (typename std::map<K, V>::const_iterator i = map_val.begin(); i != map_val.end(); ++i)
                 {
                     result->Set(i, marshal(*i));
@@ -284,7 +300,7 @@ namespace cloudcv
                 TRACE_FUNCTION;
                 for (int i = 0; i < N; i++)
                 {
-                    V8Result item = ar.As<v8::Array>()->Get(i);
+                    V8Result item = ar.template As<v8::Array>()->Get(i);
                     val[i] = marshal<T>(item);
                 }
             }
@@ -292,7 +308,7 @@ namespace cloudcv
             template<typename OutputArchive>
             static inline void save(OutputArchive& ar, T const (&val)[N])
             {
-                Local<Array> result = NanNew<Array>(N);
+                v8::Local<v8::Array> result = NanNew<v8::Array>(N);
 
                 for (uint32_t i = 0; i < N; i++)
                 {
@@ -313,7 +329,7 @@ namespace cloudcv
                 TRACE_FUNCTION;
                 for (int i = 0; i < N; i++)
                 {
-                    V8Result item = ar.As<v8::Array>()->Get(i);
+                    V8Result item = ar.template As<v8::Array>()->Get(i);
                     val[i] = marshal<T>(item);
                 }
             }
@@ -321,7 +337,7 @@ namespace cloudcv
             template<typename OutputArchive>
             static inline void save(OutputArchive& ar, const std::array<T, N>& val)
             {
-                Local<Array> result = NanNew<Array>(N);
+                v8::Local<v8::Array> result = NanNew<v8::Array>(N);
 
                 for (uint32_t i = 0; i < N; i++)
                 {
@@ -423,10 +439,10 @@ namespace cloudcv
             typedef bool_<false> is_saving;
 
             template<typename T>
-            inline LoadArchive& operator& (T& val)
+            inline LoadArchive& operator& (const T& val)
             {
                 TRACE_FUNCTION;
-                Serializer<T>::load(*this, val);
+                Serializer<T>::load(*this, const_cast<T&>(val));
                 return *this;
             }
 
@@ -458,9 +474,9 @@ namespace cloudcv
             }
 
             template <typename T>
-            inline auto As() -> decltype(_src.As<T>())
+            inline v8::Local<T> As()
             {
-                return _src.As<T>();
+                return _src.template As<T>();
             }
 
             inline operator V8Result()

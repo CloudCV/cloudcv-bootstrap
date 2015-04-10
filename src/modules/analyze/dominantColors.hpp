@@ -60,10 +60,11 @@ namespace cloudcv
         template <typename Archive>
         void serialize(Archive& ar)
         {
-            ar & serialization::make_nvp("color", color);
-            ar & serialization::make_nvp("totalPixels", totalPixels);
-            ar & serialization::make_nvp("interclassVariance", interclassVariance);
-            ar & serialization::make_nvp("error", error);
+            using namespace cloudcv::serialization;
+            ar & make_nvp("color", color);
+            ar & make_nvp("totalPixels", totalPixels);
+            ar & make_nvp("interclassVariance", interclassVariance);
+            ar & make_nvp("error", error);
         }
     };
 
