@@ -320,7 +320,7 @@ namespace cloudcv
             }
         };
 
-        template<typename T, int N>
+        template<typename T, std::size_t N>
         struct Serializer < std::array<T,N> >
         {
             template<typename InputArchive>
@@ -337,7 +337,7 @@ namespace cloudcv
             template<typename OutputArchive>
             static inline void save(OutputArchive& ar, const std::array<T, N>& val)
             {
-                v8::Local<v8::Array> result = NanNew<v8::Array>(N);
+                v8::Local<v8::Array> result = NanNew<v8::Array>(static_cast<int>(N));
 
                 for (uint32_t i = 0; i < N; i++)
                 {

@@ -295,10 +295,7 @@ namespace cloudcv
     NAN_METHOD(ImageView::AsObject)
     {
         SETUP_FUNCTION(ImageView);
-        Local<Object> res = NanNew<Object>();
         cv::Mat image = self->mImage;
-
-
         size_t length = image.total() * image.channels();
 
         switch (image.depth())
