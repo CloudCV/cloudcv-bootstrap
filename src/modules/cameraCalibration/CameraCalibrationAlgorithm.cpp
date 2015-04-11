@@ -58,7 +58,7 @@ namespace cloudcv {
 
             case ACIRCLES_GRID:
             {
-                const int flags = cv::CALIB_CB_ASYMMETRIC_GRID;
+                const int flags = cv::CALIB_CB_ASYMMETRIC_GRID | cv::CALIB_CB_CLUSTERING;
                 //cv::SimpleBlobDetector::Params params;
                 //params.filterByColor = true;
                 //params.blobColor = 0;
