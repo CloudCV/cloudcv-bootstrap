@@ -7,7 +7,7 @@
   "main": "cloudcv.js",
 
   "scripts": {
-    "test": "mocha test/test_calibrateCamera.js"
+    "test": "mocha test/*.js"
   },
 
   "dependencies": {

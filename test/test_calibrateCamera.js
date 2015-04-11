@@ -22,10 +22,10 @@ describe('cv', function() {
     describe('calibrateCamera', function() {
         
         it('detectChessboardGrid (Buffer)', function(done) {
-            var imageData = fs.readFileSync('test/data/grid-pattern.png');
+            var imageData = fs.readFileSync('test/cameracalibration/chess_corners/chess1.png');
             assert.notEqual(null, imageData);
 
-            var patternSize = { width:9, height:6 };
+            var patternSize = { width:5, height:7 };
 
             cloudcv.calibrationPatternDetect(imageData, patternSize, 'CHESSBOARD', function(error, result) {
 
@@ -37,10 +37,9 @@ describe('cv', function() {
         });
 
         it('detectChessboardGrid (File)', function(done) {
-            var patternSize = { width:9, height:6 };
+            var patternSize = { width:5, height:7 };
 
-            cloudcv.calibrationPatternDetect('test/data/grid-pattern.png', patternSize, 'CHESSBOARD', function(error, result) {
-
+            cloudcv.calibrationPatternDetect('test/cameracalibration/chess_corners/chess2.png', patternSize, 'CHESSBOARD', function(error, result) {
                 assert.equal(null, error);
                 assert.notEqual(null, result);
                 assert.equal(true, result.patternFound);
@@ -48,10 +47,10 @@ describe('cv', function() {
             });
         });
 
-        it('detectCirclesGrid', function(done) {
-            var imageData = fs.readFileSync('test/data/circles_pattern.jpg');
+        it('detectCirclesGrid (Buffer)', function(done) {
+            var imageData = fs.readFileSync('test/cameracalibration/circles/circles1.png');
             assert.notEqual(null, imageData);
-            var patternSize = { width:8, height:9 };
+            var patternSize = { width:7, height:7 };
 
             cloudcv.calibrationPatternDetect(imageData, patternSize, 'CIRCLES_GRID', function(error, result) {
                 assert.equal(null, error);
@@ -61,90 +60,57 @@ describe('cv', function() {
             }); 
         });
 
-        it('detectAsymetricCirclesGrid', function(done) {
-            var imageData = fs.readFileSync('test/data/acircles1.png');
+        it('detectCirclesGrid (File)', function(done) {
+            var patternSize = { width:7, height:7 };
+
+            cloudcv.calibrationPatternDetect('test/cameracalibration/circles/circles2.png', patternSize, 'CIRCLES_GRID', function(error, result) {
+                assert.equal(null, error);
+                assert.notEqual(null, result);
+                assert.equal(true, result.patternFound);
+                done();
+            }); 
+        });
+        
+        it('detectAsymmetricCirclesGrid (Buffer)', function(done) {
+            var imageData = fs.readFileSync('test/cameracalibration/asymmetric_circles/acircles1.png');
             assert.notEqual(null, imageData);
-            var patternSize = { width:4, height:11 };
+            var patternSize = { width:7, height:13 };
 
             cloudcv.calibrationPatternDetect(imageData, patternSize, 'ACIRCLES_GRID', function(error, result) {
                 assert.equal(null, error);
                 assert.notEqual(null, result);
                 assert.equal(true, result.patternFound);
-
-                console.log(inspect(result));
-
-                var cam = result.cameraMatrix.asObject();
-                var dis = result.distCoeffs.asObject();
-                
-                console.log(cam);
-                console.log(dis);
-
-                assert.notEqual(null, cam);
-                assert.notEqual(null, dis);
-
-                assert.equal(3, cam.size.width);
-                assert.equal(3, cam.size.height);
-
                 done();
             }); 
         });
-        
-        it('calibrateChessboard', function(done) {
+
+        it('detectAsymmetricCirclesGrid (File)', function(done) {
+            var patternSize = { width:7, height:13 };
+
+            cloudcv.calibrationPatternDetect('test/cameracalibration/asymmetric_circles/acircles2.png', patternSize, 'ACIRCLES_GRID', function(error, result) {
+                assert.equal(null, error);
+                assert.notEqual(null, result);
+                assert.equal(true, result.patternFound);
+                done();
+            }); 
+        });
+
+        it('calibrate_chessboard_grid', function(done) {
 
             this.timeout(10000);
 
             var images = [
-                'test/calibration_1/grid_01.jpg',
-                'test/calibration_1/grid_02.jpg',
-                'test/calibration_1/grid_03.jpg',
-                'test/calibration_1/grid_04.jpg',
-                'test/calibration_1/grid_05.jpg',
-                'test/calibration_1/grid_06.jpg',
-                'test/calibration_1/grid_07.jpg',
-                'test/calibration_1/grid_08.jpg',
-                'test/calibration_1/grid_09.jpg',
-                'test/calibration_1/grid_10.jpg',
-                'test/calibration_1/grid_11.jpg',
+                'test/cameracalibration/chess_corners/chess1.png',
+                'test/cameracalibration/chess_corners/chess2.png',
+                'test/cameracalibration/chess_corners/chess3.png',
+                'test/cameracalibration/chess_corners/chess4.png',
+                'test/cameracalibration/chess_corners/chess5.png',
+                'test/cameracalibration/chess_corners/chess6.png',
+                'test/cameracalibration/chess_corners/chess7.png',
             ];
-            var patternSize = { width:9, height:6 };
+            var patternSize = { width:5, height:7 };
             cloudcv.calibrateCamera(images, patternSize, 'CHESSBOARD', function(error, result) {
-                console.log(error, result);
 
-                assert.equal(null, error);
-                assert.notEqual(null, result);
-
-                var cam = result.cameraMatrix.asObject();
-                var dis = result.distCoeffs.asObject();
-                
-                //console.log(cam);
-                //console.log(dis);
-
-                assert.notEqual(null, cam);
-                assert.notEqual(null, dis);
-
-                assert.equal(3, cam.size.width);
-                assert.equal(3, cam.size.height);
-
-                done();
-            });
-        });
-        /**/
-        
-        it('calibrateCirclesGrid', function(done) {
-            var images = [
-                'test/calibration_2/grid_01.png',
-                'test/calibration_2/grid_02.png',
-                'test/calibration_2/grid_03.png',
-                'test/calibration_2/grid_04.png',
-                'test/calibration_2/grid_05.png',
-                'test/calibration_2/grid_06.png',
-                'test/calibration_2/grid_07.png',
-                'test/calibration_2/grid_08.png',
-                'test/calibration_2/grid_09.png',
-                'test/calibration_2/grid_10.png',
-            ];
-            var patternSize = { width:4, height:11 };
-            cloudcv.calibrateCamera(images, patternSize, 'ACIRCLES_GRID', function(error, result) {
                 assert.equal(null, error);
                 assert.notEqual(null, result);
 

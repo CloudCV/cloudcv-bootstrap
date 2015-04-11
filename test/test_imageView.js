@@ -49,7 +49,6 @@ describe('cv', function() {
             imview.asJpegDataUri(function(err, data) {
                 assert.equal(null, err);
                 assert.notEqual(null, data);
-                fs.writeFile('_opencv_log.html', new Buffer(data));
                 done();
             });
         });
@@ -80,7 +79,7 @@ describe('cv', function() {
         });
 
         it('thumbnail(128,128)', function(done) {
-            var imview = new cloudcv.ImageView("test/opencv-logo.jpg");
+            var imview = new cloudcv.ImageView("test/data/opencv-logo.jpg");
             imview.thumbnail(128, 128, function(error, thumbnail) {
                 assert.equal(error, null, error);
                 assert.equal(128, thumbnail.width());
