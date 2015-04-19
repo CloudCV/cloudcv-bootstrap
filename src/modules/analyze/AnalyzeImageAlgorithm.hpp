@@ -76,24 +76,22 @@ namespace cloudcv
         cv::Size                    frameSize;		// Size of input image       
         cv::Size                    aspectRatio;	// Aspect ratio of the input image
 
-        float                       rmsContrast;    // RMS contrast measure
+        double                      rmsContrast;    // RMS contrast measure
         std::array<cv::Scalar, 255> histogram;
         int                         uniqieColors;
         int                         reducedColors;
-        std::vector<DominantColor> dominantColors;
+        std::vector<DominantColor>  dominantColors;
 
         template <typename Archive>
         void serialize(Archive& ar)
         {
             ar & serialization::make_nvp("frameSize",      frameSize);
             ar & serialization::make_nvp("aspectRatio",    aspectRatio);
-            ar & serialization::make_nvp("intensity",      intensity);
             ar & serialization::make_nvp("rmsContrast",    rmsContrast);
             ar & serialization::make_nvp("histogram",      histogram);
             ar & serialization::make_nvp("uniqieColors",   uniqieColors);
             ar & serialization::make_nvp("reducedColors",  reducedColors);
             ar & serialization::make_nvp("dominantColors", dominantColors);
-            ar & serialization::make_nvp("colorDeviation", colorDeviation);
         }
     };
 

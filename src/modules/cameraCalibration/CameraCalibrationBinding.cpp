@@ -11,17 +11,12 @@
  * 
  **********************************************************************************/
 
-#include <cloudcv.hpp>
-
-#include <framework/marshal/marshal.hpp>
-#include <framework/Job.hpp>
-#include <framework/NanCheck.hpp>
-#include <framework/Logger.h>
-#include "framework/ImageSource.hpp"
 #include "CameraCalibrationAlgorithm.hpp"
-
-using namespace v8;
-using namespace node;
+#include "framework/marshal/marshal.hpp"
+#include "framework/Job.hpp"
+#include "framework/NanCheck.hpp"
+#include "framework/Logger.hpp"
+#include "framework/ImageSource.hpp"
 
 namespace cloudcv
 {
@@ -44,7 +39,7 @@ namespace cloudcv
 
     protected:
 
-        void ExecuteNativeCode()
+        void ExecuteNativeCode() override
         {
             TRACE_FUNCTION;
             cv::Mat frame = m_imageSource->getImage(cv::IMREAD_GRAYSCALE);
@@ -65,7 +60,7 @@ namespace cloudcv
             
         }
 
-        virtual Local<Value> CreateCallbackResult()
+        v8::Local<v8::Value> CreateCallbackResult() override
         {
             TRACE_FUNCTION;
             NanEscapableScope();
@@ -133,7 +128,7 @@ namespace cloudcv
 
     protected:
 
-        virtual void ExecuteNativeCode()
+        void ExecuteNativeCode() override
         {
             TRACE_FUNCTION;
             
@@ -174,7 +169,7 @@ namespace cloudcv
 
         }
 
-        virtual Local<Value> CreateCallbackResult()
+        v8::Local<v8::Value> CreateCallbackResult() override
         {
             TRACE_FUNCTION;
             NanEscapableScope();
@@ -211,8 +206,7 @@ namespace cloudcv
 
     NAN_METHOD(calibrationPatternDetect)
     {
-        using namespace cloudcv;
-
+        using namespace v8;
         TRACE_FUNCTION;
         NanEscapableScope();
 
@@ -273,6 +267,8 @@ namespace cloudcv
 
     NAN_METHOD(calibrateCamera)
     {
+        using namespace v8;
+
         TRACE_FUNCTION;
         NanEscapableScope();
 
