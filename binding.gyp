@@ -13,12 +13,14 @@
                 "src/cloudcv.cpp", 
                 "src/cloudcv.hpp",
 
+                "src/framework/Logger.hpp",                
+                "src/framework/ScopedTimer.hpp",                
+
                 "src/framework/marshal/marshal.hpp",
-               
                 "src/framework/marshal/opencv.hpp",                
                 
-                "src/framework/Image.hpp",                
-                "src/framework/Image.cpp",
+                "src/framework/ImageView.hpp",                
+                "src/framework/ImageView.cpp",
 
                 "src/framework/ImageSource.hpp",                
                 "src/framework/ImageSource.cpp",
@@ -32,20 +34,11 @@
                 "src/framework/NanCheck.hpp",
                 "src/framework/NanCheck.cpp",
                 
-                "src/modules/common/Numeric.cpp", 
-                "src/modules/common/Numeric.hpp",                 
-
-                "src/modules/common/Color.hpp", 
                 "src/modules/common/ScopedTimer.hpp", 
 
-                "src/modules/common/ImageUtils.hpp", 
-                "src/modules/common/ImageUtils.cpp", 
-
-                "src/modules/analyze/analyze.cpp", 
-                "src/modules/analyze/analyze.hpp", 
-                "src/modules/analyze/binding.cpp", 
-                "src/modules/analyze/dominantColors.hpp", 
-                "src/modules/analyze/dominantColors.cpp", 
+                "src/modules/analyze/AnalyzeImageAlgorithm.cpp", 
+                "src/modules/analyze/AnalyzeImageAlgorithm.hpp", 
+                "src/modules/analyze/AnalyzeImageBinding.cpp", 
 
                 "src/modules/buildInformation/buildInformation.cpp", 
 

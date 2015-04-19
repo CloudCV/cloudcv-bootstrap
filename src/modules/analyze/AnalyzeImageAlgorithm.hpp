@@ -13,14 +13,60 @@
 
 #pragma once
 
-#include "modules/common/Numeric.hpp"
-#include "modules/analyze/dominantColors.hpp"
 #include "framework/marshal/marshal.hpp"
+
 #include <opencv2/opencv.hpp>
 #include <array>
 
 namespace cloudcv
 {
+
+    struct Color
+    {
+        int hash;
+        int count;
+
+        Color() : hash(0), count(0) {}
+        Color(int h, int c) : hash(h), count(c) {}
+
+        int distanceTo(const Color& other) const;
+        int distanceTo(const cv::Vec3b& other) const;
+
+        bool operator< (const Color& other) const
+        {
+            return hash < other.hash;
+        }
+
+        template <typename Archive>
+        void serialize(Archive& ar)
+        {
+            ar & serialization::make_nvp("hash", hash);
+            ar & serialization::make_nvp("count", count);
+        }
+
+    };
+
+    struct DominantColor
+    {
+        cv::Vec3b color;
+        int       totalPixels;
+
+        float     interclassVariance;
+        float     error;
+
+        // Html string representation like #FFFFFF
+        std::string html() const;
+
+        template <typename Archive>
+        void serialize(Archive& ar)
+        {
+            using namespace cloudcv::serialization;
+            ar & make_nvp("color", color);
+            ar & make_nvp("totalPixels", totalPixels);
+            ar & make_nvp("interclassVariance", interclassVariance);
+            ar & make_nvp("error", error);
+        }
+    };
 
     /**
     * Result of image analyze
@@ -30,13 +76,11 @@ namespace cloudcv
         cv::Size                    frameSize;		// Size of input image       
         cv::Size                    aspectRatio;	// Aspect ratio of the input image
 
-        Distribution                intensity;		// Distribution of the gray scale image intensity
         float                       rmsContrast;    // RMS contrast measure
         std::array<cv::Scalar, 255> histogram;
         int                         uniqieColors;
         int                         reducedColors;
         std::vector<DominantColor> dominantColors;
-        RGBDistribution            colorDeviation;
 
         template <typename Archive>
         void serialize(Archive& ar)
@@ -54,6 +98,8 @@ namespace cloudcv
     };
 
     std::ostream& operator<<(std::ostream& out, const AnalyzeResult& res);
+    std::ostream& operator<<(std::ostream& out, const Color& res);
+    std::ostream& operator<<(std::ostream& out, const DominantColor& res);
 
     void AnalyzeImage(cv::Mat input, AnalyzeResult& value);
 

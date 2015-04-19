@@ -11,15 +11,39 @@
  * 
  **********************************************************************************/
 
-#include "dominantColors.hpp"
+#include "AnalyzeImageAlgorithm.hpp"
+#include "framework/ScopedTimer.hpp"
+
 #include <iomanip>
-#include <sstream>
+#include <set>
 
 namespace cloudcv
 {
+    class DominantColorsExtractor
+    {
+    public:
+        void process(const cv::Mat_<cv::Vec3b>& bgrImage);
+
+        std::vector<DominantColor> mainColors;
+
+        int getUniqueColors() const;
+        int getRedicedColors() const;
+
+    protected:
+        typedef std::set<int> ColorsSet;
+
+        bool findLargestColorSet(int similarityTolerance, int minPixelsInSet, const std::set<Color>& input, std::set<Color>& colorsSet) const;
+        DominantColor computeFinalColor(const std::set<Color>& colorsSet) const;
+
+    private:
+        std::vector<unsigned char> rVec, gVec, bVec;
+        std::map<int, int> fullColorsTable;
+        std::map<int, int> quantizedColorsTable;
+
+    };
 
     template<int N>
-    inline int quantize(int val)
+    static inline int quantize(int val)
     {
         val = val >> N;
         val = val << N;
@@ -61,8 +85,8 @@ namespace cloudcv
     {
         std::ostringstream sStream;
         sStream << "#" << std::hex << std::setw(2) << (int)color[2] // Red
-                       << std::hex << std::setw(2) << (int)color[1] // Green
-                       << std::hex << std::setw(2) << (int)color[0];// Blue
+            << std::hex << std::setw(2) << (int)color[1] // Green
+            << std::hex << std::setw(2) << (int)color[0];// Blue
         return sStream.str();
     }
 
@@ -211,26 +235,14 @@ namespace cloudcv
         return !colorsSet.empty() && totalPixelsInSet > minPixelsInSet;
     }
 
-
-    RGBDistribution DominantColorsExtractor::getColorDeviation() const
-    {
-        RGBDistribution cd;
-
-        cd.r = distribution(rVec);
-        cd.g = distribution(gVec);
-        cd.b = distribution(bVec);
-
-        return cd;
-    }
-
     int DominantColorsExtractor::getUniqueColors() const
     {
-        return (int) fullColorsTable.size();
+        return (int)fullColorsTable.size();
     }
 
     int DominantColorsExtractor::getRedicedColors() const
     {
-        return (int) quantizedColorsTable.size();
+        return (int)quantizedColorsTable.size();
     }
 
     std::ostream& operator<<(std::ostream& out, const Color& res)
@@ -241,6 +253,42 @@ namespace cloudcv
     std::ostream& operator<<(std::ostream& out, const DominantColor& res)
     {
         return out << "{ color:" << res.color << ", totalPixels: " << res.totalPixels << "}";
+    }
+
+
+
+    /**
+    * Root mean square (RMS) contrast
+    */
+    double ComputeRmsContrast(cv::Mat_<unsigned char> grayscale)
+    {
+        cv::Mat I;
+        grayscale.convertTo(I, CV_32F, 1.0f / 255.0f);
+
+        cv::Mat normalized = (I - cv::mean(I).val[0]);
+
+        double sum = cv::sum(normalized.mul(normalized)).val[0];
+        double totalPixels = grayscale.rows * grayscale.cols;
+
+        return sqrt(sum / totalPixels);
+    }
+
+    void AnalyzeImage(cv::Mat input, AnalyzeResult& value)
+    {
+        TRACE_FUNCTION;
+        value = AnalyzeResult();
+
+        DominantColorsExtractor colorsExtractor;
+        colorsExtractor.process(input);
+
+        value.frameSize = input.size();
+
+        value.rmsContrast = ComputeRmsContrast(input);
+        
+        value.dominantColors = colorsExtractor.mainColors;
+
+        value.uniqieColors = colorsExtractor.getUniqueColors();
+        value.reducedColors = colorsExtractor.getRedicedColors();
     }
 
 }

@@ -13,7 +13,7 @@
 
 #include <nan.h>
 
-#include "framework/Image.hpp"
+#include "framework/ImageView.hpp"
 #include "cloudcv.hpp"
 
 using namespace v8;

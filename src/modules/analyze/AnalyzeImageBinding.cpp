@@ -11,14 +11,12 @@
  * 
  **********************************************************************************/
 
-#include <cloudcv.hpp>
-#include <modules/analyze/analyze.hpp>
-
-#include <framework/marshal/marshal.hpp>
-#include <framework/NanCheck.hpp>
-#include <framework/Job.hpp>
-#include <framework/ImageSource.hpp>
-#include <framework/Logger.h>
+#include "modules/analyze/AnalyzeImageAlgorithm.hpp"
+#include "framework/marshal/marshal.hpp"
+#include "framework/NanCheck.hpp"
+#include "framework/Job.hpp"
+#include "framework/ImageSource.hpp"
+#include "framework/Logger.hpp"
 
 #include <vector>
 
