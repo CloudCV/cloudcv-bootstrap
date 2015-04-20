@@ -2,6 +2,7 @@
 
     'target_defaults': {
         'default_configuration': 'Release',
+
     },
 
 
@@ -57,8 +58,28 @@
                 ">!(node -e \"require('native-opencv').libraries(false)\")"
             ],
 
+            'configurations': {
+                'Debug': {
+                    'msvs_settings': {
+                        'VCCLCompilerTool': {
+                            'ExceptionHandling': '2',  # /EHsc
+                        },
+                    },
+                },
+                'Release': {
+                    'msvs_settings': {
+                        'VCCLCompilerTool': {
+                            'ExceptionHandling': '2',  # /EHsc
+                        },
+                    },
+                },
+            },
+
             'target_conditions': [
-            
+                
+                ['OS=="win"', {
+
+                }],
                 ['OS=="mac"', {
                 
                     'defines': [
@@ -67,13 +88,14 @@
 
                     'xcode_settings': {
                         'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
+                        'GCC_ENABLE_CPP_RTTI': 'YES',
                         'OTHER_CFLAGS': [ '-g', '-mmacosx-version-min=10.7', '-std=c++11', '-stdlib=libc++', '-O3', '-Wall' ],
                         'OTHER_CPLUSPLUSFLAGS': [ '-g', '-mmacosx-version-min=10.7', '-std=c++11', '-stdlib=libc++', '-O3', '-Wall' ]
                     }
                 }],
 
                 
-                ['OS=="linux"', {
+                ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
                 
                     'defines': [
                         'TARGET_PLATFORM_LINUX',
@@ -81,8 +103,8 @@
 
                     'libraries!': [ '-undefined dynamic_lookup' ],
 
-                    'cflags_cc!': [ '-fno-exceptions' ],
-                    "cflags": [ '-std=c++11', '-fexceptions' ],                    
+                    'cflags_cc!': [ '-fno-exceptions', '-fno-rtti' ],
+                    "cflags": [ '-std=c++11', '-fexceptions', '-frtti' ],                    
                 }],
 
                 ['OS=="win"', {
