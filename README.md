@@ -1,8 +1,8 @@
 # CloudCV Boostrap
 
-![CloudCV Boostrap](cloudcv-bootstrap.png)
+![CloudCV Boostrap](cloudcv-bootstrap.jpg)
 
-** A starter template for Node.js with OpenCV bindings**.
+**A starter template for Node.js with OpenCV bindings**.
 
 [![Build Status](https://travis-ci.org/CloudCV/cloudcv-bootstrap.png?branch=master)](https://travis-ci.org/CloudCV/cloudcv-bootstrap)
 
