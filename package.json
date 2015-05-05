@@ -1,6 +1,6 @@
 {
   "name": "cloudcv-bootstrap",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "A bootstrap project for prototyping cloud image processing server",
   "author": "Eugene Khvedchenya <ekhvedchenya@gmail.com>",
   "license": "MIT",
