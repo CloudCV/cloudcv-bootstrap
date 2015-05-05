@@ -2,6 +2,7 @@
 
     'target_defaults': {
         'default_configuration': 'Release',
+
     },
 
 
@@ -13,12 +14,14 @@
                 "src/cloudcv.cpp", 
                 "src/cloudcv.hpp",
 
+                "src/framework/Logger.hpp",                
+                "src/framework/ScopedTimer.hpp",                
+
                 "src/framework/marshal/marshal.hpp",
-               
                 "src/framework/marshal/opencv.hpp",                
                 
-                "src/framework/Image.hpp",                
-                "src/framework/Image.cpp",
+                "src/framework/ImageView.hpp",                
+                "src/framework/ImageView.cpp",
 
                 "src/framework/ImageSource.hpp",                
                 "src/framework/ImageSource.cpp",
@@ -32,20 +35,11 @@
                 "src/framework/NanCheck.hpp",
                 "src/framework/NanCheck.cpp",
                 
-                "src/modules/common/Numeric.cpp", 
-                "src/modules/common/Numeric.hpp",                 
-
-                "src/modules/common/Color.hpp", 
                 "src/modules/common/ScopedTimer.hpp", 
 
-                "src/modules/common/ImageUtils.hpp", 
-                "src/modules/common/ImageUtils.cpp", 
-
-                "src/modules/analyze/analyze.cpp", 
-                "src/modules/analyze/analyze.hpp", 
-                "src/modules/analyze/binding.cpp", 
-                "src/modules/analyze/dominantColors.hpp", 
-                "src/modules/analyze/dominantColors.cpp", 
+                "src/modules/analyze/AnalyzeImageAlgorithm.cpp", 
+                "src/modules/analyze/AnalyzeImageAlgorithm.hpp", 
+                "src/modules/analyze/AnalyzeImageBinding.cpp", 
 
                 "src/modules/buildInformation/buildInformation.cpp", 
 
@@ -64,8 +58,28 @@
                 ">!(node -e \"require('native-opencv').libraries(false)\")"
             ],
 
+            'configurations': {
+                'Debug': {
+                    'msvs_settings': {
+                        'VCCLCompilerTool': {
+                            'ExceptionHandling': '2',  # /EHsc
+                        },
+                    },
+                },
+                'Release': {
+                    'msvs_settings': {
+                        'VCCLCompilerTool': {
+                            'ExceptionHandling': '2',  # /EHsc
+                        },
+                    },
+                },
+            },
+
             'target_conditions': [
-            
+                
+                ['OS=="win"', {
+
+                }],
                 ['OS=="mac"', {
                 
                     'defines': [
@@ -74,13 +88,14 @@
 
                     'xcode_settings': {
                         'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
+                        'GCC_ENABLE_CPP_RTTI': 'YES',
                         'OTHER_CFLAGS': [ '-g', '-mmacosx-version-min=10.7', '-std=c++11', '-stdlib=libc++', '-O3', '-Wall' ],
                         'OTHER_CPLUSPLUSFLAGS': [ '-g', '-mmacosx-version-min=10.7', '-std=c++11', '-stdlib=libc++', '-O3', '-Wall' ]
                     }
                 }],
 
                 
-                ['OS=="linux"', {
+                ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
                 
                     'defines': [
                         'TARGET_PLATFORM_LINUX',
@@ -88,8 +103,8 @@
 
                     'libraries!': [ '-undefined dynamic_lookup' ],
 
-                    'cflags_cc!': [ '-fno-exceptions' ],
-                    "cflags": [ '-std=c++11', '-fexceptions' ],                    
+                    'cflags_cc!': [ '-fno-exceptions', '-fno-rtti' ],
+                    "cflags": [ '-std=c++11', '-fexceptions', '-frtti' ],                    
                 }],
 
                 ['OS=="win"', {

@@ -9,7 +9,7 @@
 #include <array>
 #include <memory>
 
-#include "framework/Logger.h"
+#include "framework/Logger.hpp"
 
 typedef v8::Local<v8::Value> V8Result;
 

@@ -4,7 +4,7 @@
 #include <opencv2/opencv.hpp>
 
 #include "framework/marshal/marshal.hpp"
-#include "framework/Image.hpp"
+#include "framework/ImageView.hpp"
 
 namespace cloudcv
 {
