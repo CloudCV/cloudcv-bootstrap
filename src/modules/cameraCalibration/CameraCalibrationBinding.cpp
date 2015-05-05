@@ -331,7 +331,7 @@ namespace cloudcv
             std::cout << "Unhandled C++ exception" << std::endl;
         }
 
-        if (trycatch.HasCaught()) {
+        if (trycatch.HasCaught()) {            
             std::cout << "V8 Exception" << std::endl;
         }
 

@@ -40,7 +40,7 @@ inline std::ostream& operator<<(std::ostream& out, const cv::Rect_<T>& res) {
     return out << "cv::Rect { x:" << res.x << "; y:" << res.y << ", width:" << res.width << ", height:" << res.height << "}";
 }
 
-#if defined(_DEBUG) || defined(DEBUG) 
+#if defined(_DEBUG) || defined(DEBUG)
 #if _MSC_VER
 #define TRACE_FUNCTION FunctionTraceLoggerCookie(__FUNCTION__)
 #else

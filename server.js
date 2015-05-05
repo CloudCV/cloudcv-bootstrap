@@ -59,12 +59,7 @@ function MapAnalyzeResult(analyzeResult) {
     {
         var c = analyzeResult.dominantColors[i];
 
-        returnRes.dominantColors.push({
-            red: c.average[0],
-            green: c.average[1],
-            blue: c.average[2],
-            html: c.html
-        });
+        returnRes.dominantColors.push(c);
     }
 
     return returnRes;
@@ -77,6 +72,10 @@ app.all('/api/', function(req, res, next) {
     next();
 });
 
+app.get('/api/v1/buildInformation', function (req, res) {
+    res.write(cv.buildInformation());
+    res.end();
+});
 
 app.get('/api/v1/image/analyze/dominantColors', function (req, res) {
 
@@ -109,6 +108,8 @@ app.get('/api/v1/image/analyze/dominantColors', function (req, res) {
         ], 
         function (failureOrNull, result) {
             
+            console.log(failureOrNull, result);
+
             if (failureOrNull) {
                 logger.error('Problem with a file %s: %s', externalImageURL, failureOrNull.message);
                 sendErrorResponse(500, failureOrNull.message);
@@ -119,6 +120,7 @@ app.get('/api/v1/image/analyze/dominantColors', function (req, res) {
                 res.end();
             } 
             else {
+                console.warn("Should not get here");
                 res.end();
             }
         }
