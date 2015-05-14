@@ -95,12 +95,13 @@ app.get('/api/v1/image/analyze/dominantColors', function (req, res) {
     var externalImageURL = decodeURIComponent(req.query.image);
 
     if (!validator.isURL(externalImageURL)) {
-        logger.warn('Given request is not an URL %s', externalImageURL);
+        logger.error('Given request is not an URL %s', externalImageURL);
         return sendErrorResponse(404, 'Missing required parameter');
     }
 
     async.waterfall([
         function (callback) {
+            logger.info('Downloading external image from ' + externalImageURL);
             download.plainDownloadViaHttpGet(externalImageURL, callback);
         },
         function (image, callback) {
@@ -110,8 +111,6 @@ app.get('/api/v1/image/analyze/dominantColors', function (req, res) {
         ], 
         function (failureOrNull, result) {
             
-            console.log(failureOrNull, result);
-
             if (failureOrNull) {
                 logger.error('Problem with a file %s: %s', externalImageURL, failureOrNull.message);
                 sendErrorResponse(500, failureOrNull.message);
@@ -122,7 +121,7 @@ app.get('/api/v1/image/analyze/dominantColors', function (req, res) {
                 res.end();
             } 
             else {
-                console.warn("Should not get here");
+                console.error("Neither error nor result are defined");
                 res.end();
             }
         }
@@ -161,11 +160,15 @@ app.post('/api/v1/image/analyze/dominantColors/', function (req, res) {
                 res.write(JSON.stringify(MapAnalyzeResult(result)));
                 res.end();
             }
+            else {
+                console.error("Neither error nor result are defined");
+                res.end();
+            }
         }
     );
 
 });
 
 http.createServer(app).listen(app.get('port'), function(){
-  logger.log("api.cloudcv.io server listening on port " + app.get('port'));
+  logger.info("cloudcv-bootstrap server listening on port " + app.get('port'));
 });
