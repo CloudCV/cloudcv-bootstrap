@@ -11,7 +11,13 @@ This project lets you to quickly prototype a REST API in a Node.js for a image p
 ## Installation
 
 ```bash
-npm install cloudcv-bootstrap
+# Get the latest snapshot 
+$ git clone —depth=1 https://github.com/CloudCV/cloudcv-bootstrap.git myproject
+$ cd myproject 
+$ git remote rm origin 
+
+# Install NPM dependencies 
+$ npm install
 ```
 
 ## Quick start
