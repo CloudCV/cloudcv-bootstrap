@@ -1,0 +1,154 @@
+extends layout
+
+block content
+  script.
+
+    function rgbToHex(r, g, b) {
+      return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    }
+
+    function renderDominantColorsResponse(error, response) {
+        if (error) {
+            //$('#resultsPanel').hide(0);
+            //$('#processingErrorMessage').html(error.message);
+            //$('#processingError').show();
+        }
+        else {
+            //$('#processingError').hide(0);
+            //$('#sourceImage').attr('src', imageSrc);
+            $('#dominantColors').empty();
+            for (var i = 0; i < response.dominantColors.length; i++) {
+                var c = response.dominantColors[i].color;
+
+                $('#dominantColors').append('<div class="pull-left" style="border:1px; width:100%; height:64px; background:'+rgbToHex(c[2],c[1],c[0])+'"></span>');
+            }
+            //#$('#response-raw').html(JSON.stringify(response, undefined, '\t'));
+            //$('#resultsPanel').show();
+        } 
+    }
+    function extractDominantColorsFromUrl(imageUrl) {
+        cloudcv.image.analyze.dominantColors(imageUrl, renderDominantColorsResponse(e, r) );
+    }
+    function extractDominantColorsFromFile(image, file) {
+        //var s = image.src;
+        //$('#selected-image').attr('src', URL.createObjectURL(file)).width(200).height(200);
+        var imageBlob = cloudcv.common.getImageDataAsBlob(image);
+        cloudcv.image.analyze.dominantColors(imageBlob,  function(e, r) { renderDominantColorsResponse(e, r, URL.createObjectURL(file)); });
+    }
+
+  div.container
+    h1 Welcome to CloudCV demonstration
+  
+    div
+      img.pull-left(src="/images/cloudcv-logo.png")
+
+      p.lead This website demonstrate interopability between Node.js and OpenCV library. It's hosted in the cloud environment. 
+        | Here you will see that it's really simple to perform CPU-intense image processing routines in the cloud. 
+        | A Node.js server handle client requests and calls C++ back-end. In this showcase demonstration you can try the following examples:
+    
+    h2 Examples
+    div.row
+      .col-md-8
+        div#dropZone
+          img(id='sourceImage',style='max-width:100%;max-height:512px',src="/images/mandril-300x200.png",alt="...")
+      .col-md-4(id='dominantColors')  
+
+block scripts
+    script.
+        $(document).ready(function () { 
+
+          var srcImg = $("#sourceImage");
+
+          var dropZone = $('#dropZone'),
+          maxFileSize = 1000000; // максимальный размер фалйа - 1 мб.
+    
+          // Проверка поддержки браузером
+          if (typeof(window.FileReader) == 'undefined') {
+              //dropZone.text('Не поддерживается браузером!');
+              dropZone.addClass('error');
+          }
+          
+          // Добавляем класс hover при наведении
+          dropZone[0].ondragover = function() {
+              dropZone.addClass('hover');
+              return false;
+          };
+          
+          // Убираем класс hover
+          dropZone[0].ondragleave = function() {
+              dropZone.removeClass('hover');
+              return false;
+          };
+          
+          // Обрабатываем событие Drop
+          dropZone[0].ondrop = function(event) {
+              event.preventDefault();
+              dropZone.removeClass('hover');
+              dropZone.addClass('drop');
+              
+              var file = event.dataTransfer.files[0];
+              
+              // Проверяем размер файла
+              if (file.size > maxFileSize) {
+                  //dropZone.text('Файл слишком большой!');
+                  dropZone.addClass('error');
+              }
+              else
+              {                
+                var url = URL.createObjectURL(file);
+                
+                if (url) {
+                    srcImg.attr('src', url);
+                }
+                else {
+                    var reader = new FileReader();
+                    
+                    reader.onload = function (oFREvent) {
+                        var dataUrl = oFREvent.target.result;
+                        srcImg.attr('src', dataUrl);
+                    };
+                    
+                    reader.readAsDataURL(file);
+                }
+              }
+              // Создаем запрос
+              /*
+              #var xhr = new XMLHttpRequest();
+              xhr.upload.addEventListener('progress', uploadProgress, false);
+              xhr.onreadystatechange = stateChange;
+              xhr.open('POST', '/upload.php');
+              xhr.setRequestHeader('X-FILE-NAME', file.name);
+              xhr.send(file);
+              */
+          };
+          
+          // Показываем процент загрузки
+          function uploadProgress(event) {
+              var percent = parseInt(event.loaded / event.total * 100);
+              dropZone.text('Загрузка: ' + percent + '%');
+          }
+          
+          // Пост обрабочик
+          function stateChange(event) {
+              if (event.target.readyState == 4) {
+                  if (event.target.status == 200) {
+                      dropZone.text('Загрузка успешно завершена!');
+                  } else {
+                      dropZone.text('Произошла ошибка!');
+                      dropZone.addClass('error');
+                  }
+              }
+          }
+
+          srcImg.load(function (e) {
+            extractDominantColorsFromFile(srcImg.get(0));                  
+          });
+
+            //$('#processingError').hide(0);
+            //$('#resultsPanel').hide(0);
+            //cloudcv.common.bindHookOnFileInput('file-selector', extractDominantColorsFromFile);
+            //$('#output a').click(function (e) {
+            //    e.preventDefault()
+            //    $(this).tab('show')
+            //})
+        });

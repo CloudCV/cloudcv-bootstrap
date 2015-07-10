@@ -43,10 +43,18 @@ var multerOptions = {
 // Configuration
 app.set('port', process.env.PORT || 3000);
 app.set('title', 'cloudcv-bootstrap');
+app.set('views', __dirname + '/views');
+app.set('view engine', 'jade');
+app.set('view options', { pretty: true });
+
 app.use(methodOverride());
 app.use(multer(multerOptions));
 app.use(cookieParser('optional secret string'));
-app.use(pmx.expressErrorHandler());  
+app.use(pmx.expressErrorHandler());
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Static pages
+app.get('/', function (req, res) { res.render('index'); });
 
 function MapAnalyzeResult(analyzeResult) {
     var returnRes = {
@@ -168,6 +176,8 @@ app.post('/api/v1/image/analyze/dominantColors/', function (req, res) {
     );
 
 });
+
+logger.info("cloudcv-bootstrap server starting on port " + app.get('port'));
 
 http.createServer(app).listen(app.get('port'), function(){
   logger.info("cloudcv-bootstrap server listening on port " + app.get('port'));
