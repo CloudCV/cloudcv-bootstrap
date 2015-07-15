@@ -18,7 +18,16 @@ $ git remote rm origin
 
 # Install NPM dependencies 
 $ npm install
+
+# Start local server
+$ npm start
 ```
+
+After starting local webserver, navigate to http://localhost:3000 where you should see similar page:
+
+![Website](Website.png)
+
+Here you can drop arbitrary image to extract dominant colors using REST-API. 
 
 ## Quick start
 
