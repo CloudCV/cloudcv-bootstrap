@@ -14,12 +14,21 @@
 #pragma once
 
 #include "framework/marshal/marshal.hpp"
+#include "framework/Algorithm.hpp"
 
 #include <opencv2/opencv.hpp>
 #include <array>
 
 namespace cloudcv
 {
+    class AnalyzeImageAlgorithm : public Algorithm
+    {
+
+        static AlgorithmInfoPtr info();
+
+        virtual void process(const std::vector<ParameterBinding>& inputArgs, const std::vector<ParameterBinding>& outputArgs) override;
+
+    };
 
     struct Color
     {

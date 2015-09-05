@@ -34,6 +34,9 @@
                     
                 "src/framework/NanCheck.hpp",
                 "src/framework/NanCheck.cpp",
+
+                "src/framework/Algorithm.hpp",
+                "src/framework/Algorithm.cpp",
                 
                 "src/modules/common/ScopedTimer.hpp", 
 
