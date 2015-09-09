@@ -11,7 +11,8 @@ namespace cloudcv
 
     V8Result marshal(ParameterBindingPtr val)
     {
-        throw std::runtime_error("Not implemented");
+        NanEscapableScope();
+        return NanEscapeScope(val->marshalFromNative());
     }
 
     class AlgorithmTask : public Job
@@ -121,5 +122,10 @@ namespace cloudcv
         NanReturnUndefined();
     }
 
+
+    std::shared_ptr<ParameterBinding> InputParameter::Bind(AlgorithmParamPtr key, v8::Local<v8::Value> value)
+    {
+        return key->visit(TypeParameterRecoveryVisitor(value));
+    }
 
 }

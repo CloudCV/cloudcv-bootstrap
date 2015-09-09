@@ -11,6 +11,8 @@ namespace cloudcv
     {
     public:
 
+        virtual void visit(AlgorithmParamVisitor * visitor) default;
+
         virtual ~AlgorithmParam() = default;
         virtual std::string name() const = 0;
         virtual std::string type() const = 0;
@@ -18,6 +20,16 @@ namespace cloudcv
         virtual bool hasDefaultValue() const = 0;
     };
     
+    class AlgorithmParamVisitor
+    {
+    public:        
+        bool apply(AlgorithmParam* parameter) { return false; }
+        
+        virtual bool apply(TypedParameter<int>* parameter);
+        virtual bool apply(TypedParameter<int>* parameter);
+        virtual bool apply(TypedParameter<int>* parameter);
+    };
+
     template<typename T>
     class TypedParameter : public AlgorithmParam
     {
@@ -37,19 +49,24 @@ namespace cloudcv
         {
         }
     
-        std::string AlgorithmParam::name() const override
+        std::string name() const override
         {
             return m_name;
         }
 
-        std::string AlgorithmParam::type() const override
+        std::string type() const override
         {
         }
 
-        bool AlgorithmParam::hasDefaultValue() const override
+        bool hasDefaultValue() const override
         {
             return m_hasDefaultValue;
         }
+
+        bool visit(AlgorithmParamVisitor * visitor) override {
+            return visitor->apply(this);
+        }
+
 
         static std::shared_ptr<AlgorithmParam> create(const char * name) { return std::shared_ptr<AlgorithmParam>(new TypedParameter<T>(name)); }
 
@@ -88,6 +105,8 @@ namespace cloudcv
         virtual std::string type() const = 0;
 
         virtual ~ParameterBinding() = default;
+
+        virtual Local<Value> marshalFromNative() = 0;
     };
 
     struct no_deleter {
@@ -129,6 +148,12 @@ namespace cloudcv
         T& get()
         {
             return *m_value.get();
+        }
+
+        Local<Value> marshalFromNative() override
+        {
+            NanEscapableScope();
+            return NanEscapeScope(marshal(m_value));
         }
 
     private:
