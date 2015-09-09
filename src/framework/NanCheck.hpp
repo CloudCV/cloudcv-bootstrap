@@ -122,6 +122,7 @@ namespace cloudcv
         NanMethodArgBinding& IsString();
         NanMethodArgBinding& NotNull();
         NanMethodArgBinding& IsArray();
+        NanMethodArgBinding& IsObject();
 
         template <typename T>
         NanArgStringEnum<T> StringEnum(std::initializer_list< std::pair<const char*, T> > possibleValues);

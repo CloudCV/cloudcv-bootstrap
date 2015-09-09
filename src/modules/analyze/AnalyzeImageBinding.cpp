@@ -1,14 +1,14 @@
 /**********************************************************************************
  * CloudCV Boostrap - A starter template for Node.js with OpenCV bindings.
  *                    This project lets you to quickly prototype a REST API
- *                    in a Node.js for a image processing service written in C++. 
- * 
+ *                    in a Node.js for a image processing service written in C++.
+ *
  * Author: Eugene Khvedchenya <ekhvedchenya@gmail.com>
- * 
+ *
  * More information:
  *  - https://cloudcv.io
  *  - http://computer-vision-talks.com
- * 
+ *
  **********************************************************************************/
 
 #include "modules/analyze/AnalyzeImageAlgorithm.hpp"
@@ -17,108 +17,97 @@
 #include "framework/Job.hpp"
 #include "framework/ImageSource.hpp"
 #include "framework/Logger.hpp"
+#include "framework/Algorithm.hpp"
 
 #include <vector>
 
 using namespace v8;
 using namespace node;
-using namespace cloudcv;
-
-
 
 namespace cloudcv
 {
-    class ImageAnalyzeTask : public Job
+    class AnalyzeImageAlgorithmInfo : public AlgorithmInfo
+    {
+        AlgorithmParamPtr _input[1];
+        AlgorithmParamPtr _output[1];
+
+    public:
+        AnalyzeImageAlgorithmInfo()
+        {
+            _input[1] = TypedParameter<cv::Mat>::create("input");
+            _output[1] = TypedParameter<cv::Mat>::create("output");
+        }
+
+        std::string name() const override
+        {
+            return "analyzeImage";
+        }
+
+        uint32_t inputArguments() const override
+        {
+            return 1;
+        }
+
+        uint32_t outputArguments() const override
+        {
+            return 1;
+        }
+
+        AlgorithmParamPtr getInputArgumentType(uint32_t argumentIndex) const override
+        {
+            switch (argumentIndex)
+            {
+            case 0:
+                return _input[0];
+
+            default:
+                throw std::runtime_error("Invalid argument index");
+            }
+        }
+
+        AlgorithmParamPtr getOutputArgumentType(uint32_t argumentIndex) const override
+        {
+            switch (argumentIndex)
+            {
+            case 0:
+                return _output[0];
+
+            default:
+                throw std::runtime_error("Invalid argument index");
+            }
+        }
+    };
+
+    class AnalyzeImageAlgorithm : public Algorithm
     {
     public:
-
-        ImageAnalyzeTask(ImageSourcePtr image, NanCallback * callback)
-            : Job(callback)
-            , m_imageSource(image)
+        AlgorithmInfoPtr info() override
         {
-            TRACE_FUNCTION;
+            static std::shared_ptr<AlgorithmInfo> _info;
+            if (!_info)
+                _info.reset(new AnalyzeImageAlgorithmInfo);
+
+            return _info;
         }
 
-        virtual ~ImageAnalyzeTask()
+        void process(const std::vector<ParameterBindingPtr>& inputArgs,
+                     std::vector<ParameterBindingPtr>& outputArgs) override
         {
-            TRACE_FUNCTION;
+            cv::Mat source = dynamic_cast<TypedBinding<cv::Mat>*>(inputArgs[0].get())->get();
+            cv::Mat& res = dynamic_cast<TypedBinding<cv::Mat>*>(outputArgs[1].get())->get();
+
+            source.copyTo(res);
         }
 
-    protected:
-
-        // This function is executed in another thread at some point after it has been
-        // scheduled. IT MUST NOT USE ANY V8 FUNCTIONALITY. Otherwise your extension
-        // will crash randomly and you'll have a lot of fun debugging.
-        // If you want to use parameters passed into the original call, you have to
-        // convert them to PODs or some other fancy method.
-        virtual void ExecuteNativeCode()
+        inline static AlgorithmPtr create()
         {
-            TRACE_FUNCTION;
-            cv::Mat image = m_imageSource->getImage();
-
-            if (image.empty())
-            {
-                SetErrorMessage("Cannot decode image");
-                return;
-            }
-
-            AnalyzeImage(image, m_analyzeResult);
+            return Algorithm::create("AnalyzeImageAlgorithm");
         }
-
-        // This function is executed in the main V8/JavaScript thread. That means it's
-        // safe to use V8 functions again. Don't forget the HandleScope!
-        virtual Local<Value> CreateCallbackResult()
-        {
-            TRACE_FUNCTION;
-            NanEscapableScope();
-            return NanEscapeScope(marshal(m_analyzeResult));
-        }
-
-    private:
-        ImageSourcePtr m_imageSource;
-        AnalyzeResult  m_analyzeResult;
     };
 
     NAN_METHOD(analyzeImage)
     {
-        using namespace cloudcv;
-
-        TRACE_FUNCTION;
-        NanEscapableScope();
-        
-        Local<Object> imageBuffer;
-        std::string   imageFile;
-        Local<Function> imageCallback;
-        std::string     error;
-
-        if (NanCheck(args)
-            .Error(&error)
-            .ArgumentsCount(2)
-            .Argument(0).IsBuffer().Bind(imageBuffer)
-            .Argument(1).IsFunction().Bind(imageCallback))
-        {
-            NanCallback *callback = new NanCallback(imageCallback);
-            NanAsyncQueueWorker(new ImageAnalyzeTask(CreateImageSource(imageBuffer), callback));
-            NanReturnUndefined();
-        }
-        else if (NanCheck(args)
-            .Error(&error)
-            .ArgumentsCount(2)
-            .Argument(0).IsString().Bind(imageFile)
-            .Argument(1).IsFunction().Bind(imageCallback))
-        {
-            NanCallback *callback = new NanCallback(imageCallback);
-            NanAsyncQueueWorker(new ImageAnalyzeTask(CreateImageSource(imageFile), callback));
-            NanReturnUndefined();
-        }
-        else if (!error.empty())
-        {
-            std::cout << "Cannot parse input arguments: " << error.c_str() << std::endl;
-            NanThrowTypeError(error.c_str());
-        }
-
+        ProcessAlgorithm(AnalyzeImageAlgorithm::create(), args);
         NanReturnUndefined();
     }
-
-
 }

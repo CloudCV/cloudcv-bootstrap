@@ -21,14 +21,7 @@
 
 namespace cloudcv
 {
-    class AnalyzeImageAlgorithm : public Algorithm
-    {
-
-        static AlgorithmInfoPtr info();
-
-        virtual void process(const std::vector<ParameterBinding>& inputArgs, const std::vector<ParameterBinding>& outputArgs) override;
-
-    };
+    
 
     struct Color
     {

@@ -291,69 +291,7 @@ namespace cloudcv
         value.reducedColors = colorsExtractor.getRedicedColors();
     }
 
-    void AnalyzeImageAlgorithm::process(const std::vector<ParameterBinding>& inputArgs, const std::vector<ParameterBinding>& outputArgs)
-    {
-        throw std::logic_error("The method or operation is not implemented.");
-    }
 
-    class AnalyzeImageAlgorithmInfo : public AlgorithmInfo
-    {
-        AlgorithmParamPtr _input[1];
-        AlgorithmParamPtr _output[1];
 
-    public:
-        AnalyzeImageAlgorithmInfo()
-        {
-
-        }
-        virtual std::string name() const override
-        {
-            return "analyzeImage";
-        }
-
-        virtual uint32_t inputArguments() const override
-        {
-            return 1;
-        }
-
-        virtual uint32_t outputArguments() const override
-        {
-            return 1;
-        }
-
-        virtual AlgorithmParamPtr getInputArgumentType(uint32_t argumentIndex) const override
-        {
-            switch (argumentIndex)
-            {
-            case 0:
-                return _input[0];
-
-            default:
-                throw std::runtime_error("Invalid argument index");
-            }
-        }
-
-        virtual AlgorithmParamPtr getOutputArgumentType(uint32_t argumentIndex) const override
-        {
-            switch (argumentIndex)
-            {
-            case 0:
-                return _output[0];
-
-            default:
-                throw std::runtime_error("Invalid argument index");
-            }
-        }
-
-    };
-
-    AlgorithmInfoPtr AnalyzeImageAlgorithm::info()
-    {
-        static std::shared_ptr<AlgorithmInfo> _info;
-        if (!_info)
-            _info.reset(new AnalyzeImageAlgorithmInfo);
-
-        return _info;
-    }
 
 }

@@ -92,6 +92,20 @@ namespace cloudcv
         return *this;
     }
 
+    NanMethodArgBinding& NanMethodArgBinding::IsObject()
+    {
+        auto bind = [this](_NAN_METHOD_ARGS_TYPE args)
+        {
+            bool isArr = args[mArgIndex]->IsObject();
+            LOG_TRACE_MESSAGE("Checking whether argument is object:" << isArr);
+            if (!isArr)
+                throw ArgumentMismatchException(std::string("Argument ") + lexical_cast(mArgIndex) + " violates IsObject check");
+
+            return true;
+        };
+        mParent.AddAndClause(bind);
+        return *this;
+    }
 
     NanMethodArgBinding& NanMethodArgBinding::IsString()
     {

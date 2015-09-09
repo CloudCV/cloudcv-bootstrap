@@ -522,6 +522,7 @@ namespace cloudcv
 
         return NanEscapeScope(oa._dst);
     }
+
 }
 
 #include <framework/marshal/opencv.hpp>

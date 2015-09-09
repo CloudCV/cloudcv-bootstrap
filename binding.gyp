@@ -65,6 +65,7 @@
                 'Debug': {
                     'msvs_settings': {
                         'VCCLCompilerTool': {
+                            'RuntimeTypeInfo': 'true',
                             'ExceptionHandling': '2',  # /EHsc
                         },
                     },
@@ -72,6 +73,7 @@
                 'Release': {
                     'msvs_settings': {
                         'VCCLCompilerTool': {
+                            'RuntimeTypeInfo': 'true',
                             'ExceptionHandling': '2',  # /EHsc
                         },
                     },
