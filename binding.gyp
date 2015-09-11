@@ -29,9 +29,6 @@
                 "src/framework/Job.hpp",                
                 "src/framework/Job.cpp",
 
-                "src/framework/Async.hpp",
-                "src/framework/Async.cpp",
-                    
                 "src/framework/NanCheck.hpp",
                 "src/framework/NanCheck.cpp",
 
@@ -40,15 +37,7 @@
                 
                 "src/modules/common/ScopedTimer.hpp", 
 
-                "src/modules/analyze/AnalyzeImageAlgorithm.cpp", 
-                "src/modules/analyze/AnalyzeImageAlgorithm.hpp", 
-                "src/modules/analyze/AnalyzeImageBinding.cpp", 
-
-                "src/modules/buildInformation/buildInformation.cpp", 
-
-                "src/modules/cameraCalibration/CameraCalibrationBinding.cpp", 
-                "src/modules/cameraCalibration/CameraCalibrationAlgorithm.hpp", 
-                "src/modules/cameraCalibration/CameraCalibrationAlgorithm.cpp", 
+                "src/modules/HoughLines.cpp"
             ],
 
             'include_dirs': [

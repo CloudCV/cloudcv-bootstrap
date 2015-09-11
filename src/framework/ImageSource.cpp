@@ -11,14 +11,23 @@
 *
 **********************************************************************************/
 #include "ImageSource.hpp"
+#include "Algorithm.hpp"
 #include <nan.h>
+#include "framework/marshal/marshal.hpp"
 
 using namespace v8;
 using namespace node;
 
 namespace cloudcv
 {
-    class FileImageSource : public ImageSource
+    class ImageSource::ImageSourceImpl
+    {
+    public:
+        virtual ~ImageSourceImpl() = default;
+        virtual cv::Mat getImage(int flags) = 0;
+    };
+
+    class FileImageSource : public ImageSource::ImageSourceImpl
     {
     public:
         FileImageSource(const std::string& imagePath)
@@ -26,11 +35,7 @@ namespace cloudcv
         {            
         }
 
-        virtual ~FileImageSource()
-        {
-        }
-
-        cv::Mat getImage(int flags)
+        cv::Mat getImage(int flags) override
         {
             return cv::imread(mFilePath, flags);
         }
@@ -39,7 +44,7 @@ namespace cloudcv
         std::string mFilePath;
     };
 
-    class BufferImageSource : public ImageSource
+    class BufferImageSource : public ImageSource::ImageSourceImpl
     {
     public:
         BufferImageSource(Local<Object> imageBuffer)
@@ -66,14 +71,38 @@ namespace cloudcv
         size_t                   mImageDataLen;
     };
 
-    ImageSourcePtr CreateImageSource(const std::string& filepath)
+    ImageSource::ImageSource(std::shared_ptr<ImageSourceImpl> impl)
+        : m_impl(impl)
     {
-        return ImageSourcePtr(new FileImageSource(filepath));
     }
 
-    ImageSourcePtr CreateImageSource(v8::Local<v8::Object> imageBuffer)
+    cv::Mat ImageSource::getImage(int flags /* = cv::IMREAD_COLOR */)
     {
-        return ImageSourcePtr(new BufferImageSource(imageBuffer));
+        if (m_impl)
+            m_impl->getImage(flags);
+
+        throw std::runtime_error("Image is empty");
+    }
+
+    ImageSource ImageSource::CreateImageSource(const std::string& filepath)
+    {
+        return ImageSource(std::shared_ptr<ImageSourceImpl>(new FileImageSource(filepath)));
+    }
+
+    ImageSource ImageSource::CreateImageSource(v8::Local<v8::Value> bufferOrString)
+    {
+        if (Buffer::HasInstance(bufferOrString))
+            return CreateImageSource(bufferOrString->ToObject());
+
+        if (bufferOrString->IsString())
+            return CreateImageSource(marshal<std::string>(bufferOrString->ToString()));
+
+        throw serialization::MarshalTypeMismatchException("Invalid input argument type. Cannot create ImageSource");
+    }
+
+    ImageSource ImageSource::CreateImageSource(v8::Local<v8::Object> imageBuffer)
+    {
+        return ImageSource(std::shared_ptr<ImageSourceImpl>(new BufferImageSource(imageBuffer)));
     }
 
 }

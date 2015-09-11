@@ -9,6 +9,7 @@
 namespace cloudcv
 {
 
+
     V8Result marshal(ParameterBindingPtr val)
     {
         NanEscapableScope();
@@ -45,7 +46,22 @@ namespace cloudcv
         void ExecuteNativeCode() override
         {
             TRACE_FUNCTION;
-            m_algorithm->process(m_input, m_output);
+            try
+            {
+                m_algorithm->process(m_input, m_output);
+            }
+            catch (ArgumentException& err)
+            {
+                SetErrorMessage(err.what());
+            }
+            catch (cv::Exception& err)
+            {
+                SetErrorMessage(err.what());
+            }
+            catch (std::runtime_error& err)
+            {
+                SetErrorMessage(err.what());
+            }
         }
 
         // This function is executed in the main V8/JavaScript thread. That means it's
@@ -123,9 +139,81 @@ namespace cloudcv
     }
 
 
+    class InputParameterBinder : public AlgorithmParamVisitor
+    {
+    private:
+        v8::Local<v8::Value>              m_value;
+        std::shared_ptr<ParameterBinding> m_bind;
+
+    protected:
+
+        template <typename T>
+        bool convert(TypedParameter<T>* parameter)
+        {
+            if (m_value->IsUndefined())
+            {
+                if (parameter->hasDefaultValue())
+                    m_bind = parameter->createDefault();
+                else
+                    throw MissingInputArgumentException(parameter->name());
+            }
+
+            m_bind.reset(new TypedBinding<T>(parameter->name(), marshal<T>(m_value)));
+            return true;
+        }
+
+    public:
+        InputParameterBinder(v8::Local<v8::Value> value)
+        {
+        }
+
+        std::shared_ptr<ParameterBinding> getBind()
+        {
+            return m_bind;
+        }
+
+        virtual bool apply(TypedParameter<bool>* parameter) override
+        {
+            return convert(parameter);
+        }
+
+        virtual bool apply(TypedParameter<ImageSource>* parameter) override
+        {
+            return convert(parameter);
+        }
+
+        virtual bool apply(TypedParameter<double>* parameter) override
+        {
+            return convert(parameter);
+        }
+
+        virtual bool apply(TypedParameter<float>* parameter) override
+        {
+            return convert(parameter);
+        }
+
+        virtual bool apply(TypedParameter<int>* parameter) override
+        {
+            return convert(parameter);
+        }
+
+        virtual bool apply(TypedParameter<std::vector<cv::Point2f>>* parameter) override
+        {
+            return convert(parameter);
+        }
+    };
+
+
     std::shared_ptr<ParameterBinding> InputParameter::Bind(AlgorithmParamPtr key, v8::Local<v8::Value> value)
     {
-        return key->visit(TypeParameterRecoveryVisitor(value));
+        InputParameterBinder visitor(value);
+        key->visit(&visitor);
+        return visitor.getBind();
+    }
+
+    std::shared_ptr<ParameterBinding> OutputParameter::Create(AlgorithmParamPtr key)
+    {
+        return key->createDefault();
     }
 
 }

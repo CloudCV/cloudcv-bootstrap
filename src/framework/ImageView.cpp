@@ -446,7 +446,7 @@ namespace cloudcv
         {
             NanCallback *callback = new NanCallback(loadCallback);
             auto task = [imagePath](AsyncReturnHelper& result, AsyncErrorFunction error) {
-                cv::Mat image = CreateImageSource(imagePath)->getImage();
+                cv::Mat image = ImageSource::CreateImageSource(imagePath).getImage();
                 if (image.empty())
                     error("Cannot read image from the file");
                 else
@@ -463,8 +463,8 @@ namespace cloudcv
             .Argument(1).IsFunction().Bind(loadCallback))
         {
             NanCallback *callback = new NanCallback(loadCallback);
-            auto task = [imagePath](AsyncReturnHelper& result, AsyncErrorFunction error) {
-                cv::Mat image = CreateImageSource(imagePath)->getImage();
+            auto task = [imageBuffer](AsyncReturnHelper& result, AsyncErrorFunction error) {
+                cv::Mat image = ImageSource::CreateImageSource(imageBuffer).getImage();
                 if (image.empty())
                     error("Cannot decode image from the buffer");
                 else

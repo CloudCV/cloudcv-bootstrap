@@ -14,7 +14,7 @@
 
 #include <opencv2/opencv.hpp>
 #include <memory>
-#include <nan.h>
+#include <v8.h>
 
 namespace cloudcv
 {
@@ -32,28 +32,37 @@ namespace cloudcv
          * @return  This function returns the loaded image. It can also return an 
          *          empty object if the image could not been loaded.
          */
-        virtual cv::Mat getImage(int flags = cv::IMREAD_COLOR) = 0;
+        cv::Mat getImage(int flags = cv::IMREAD_COLOR);
 
         virtual ~ImageSource() {}
 
+        /**
+        * @brief Creates an ImageSource that points to particular file on filesystem.
+        */
+        static ImageSource CreateImageSource(const std::string& filepath);
+
+        /**
+        * @brief Creates an ImageSource that points to file's binary content that was
+        *        loaded using Node.js.
+        */
+        static ImageSource CreateImageSource(v8::Local<v8::Value> bufferOrString);
+
+        /**
+        * @brief Creates an ImageSource that points to file's binary content that was
+        *        loaded using Node.js.
+        */
+        static ImageSource CreateImageSource(v8::Local<v8::Object> imageBuffer);
+
+        class ImageSourceImpl;
+
+        ImageSource() = default;
+
     protected:
-        ImageSource() {}
-    
+        ImageSource(std::shared_ptr<ImageSourceImpl> impl);
+
+
     private:
-        ImageSource(const ImageSource& src);
-        ImageSource& operator=(const ImageSource& src);
+        std::shared_ptr<ImageSourceImpl> m_impl;
     };
 
-    typedef std::shared_ptr<ImageSource> ImageSourcePtr;
-
-    /**
-     * @brief Creates an ImageSource that points to particular file on filesystem.
-     */
-    ImageSourcePtr CreateImageSource(const std::string& filepath);
-
-    /**
-     * @brief Creates an ImageSource that points to file's binary content that was
-     *        loaded using Node.js.
-     */
-    ImageSourcePtr CreateImageSource(v8::Local<v8::Object> imageBuffer);
 }

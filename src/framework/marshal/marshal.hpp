@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "framework/Logger.hpp"
+#include "framework/ImageSource.hpp"
 
 typedef v8::Local<v8::Value> V8Result;
 
@@ -349,6 +350,22 @@ namespace cloudcv
             }
         };
 
+        template<>
+        struct Serializer < ImageSource >
+        {
+            template<typename InputArchive>
+            static inline void load(InputArchive& ar, ImageSource& val)
+            {
+                val = ImageSource::CreateImageSource(ar.target());
+            }
+
+            template<typename OutputArchive>
+            static inline void save(OutputArchive& ar, const ImageSource& val)
+            {
+                //NOP for now
+            }
+        };
+
         template <bool C_>
         struct bool_ {
             static const bool value = C_;
@@ -438,6 +455,11 @@ namespace cloudcv
             typedef bool_<true> is_loading;
             typedef bool_<false> is_saving;
 
+            inline V8Result target() const
+            {
+                return _src;
+            }
+
             template<typename T>
             inline LoadArchive& operator& (const T& val)
             {
@@ -487,7 +509,10 @@ namespace cloudcv
         private:
             V8Result _src;
         };
-    
+
+        template<>
+        inline void LoadArchive::load(bool& val) { val = _src->BooleanValue(); }
+
         template<>
         inline void LoadArchive::load(int& val) { val = _src->Int32Value(); }
 
@@ -495,12 +520,14 @@ namespace cloudcv
         inline void LoadArchive::load(float& val) { val = (float)_src->NumberValue(); }
 
         template<>
+        inline void LoadArchive::load(double& val) { val = (double)_src->NumberValue(); }
+
+        template<>
         inline void LoadArchive::load(uint32_t& val) { val = (uint32_t)_src->Uint32Value(); }
 
     } // namespace marshal
 
     // Marshal functions implementation
-
     template <typename T>
     inline T marshal(V8Result val)
     {
@@ -522,6 +549,7 @@ namespace cloudcv
 
         return NanEscapeScope(oa._dst);
     }
+
 
 }
 

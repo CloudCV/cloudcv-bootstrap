@@ -1,6 +1,6 @@
 /**********************************************************************************
- * CloudCV Boostrap - A starter template for Node.js with OpenCV bindings.
- *                    This project lets you to quickly prototype a REST API
+ * CloudCV Bootstrap - A starter template for Node.js with OpenCV bindings.
+ *                      This project lets you to quickly prototype a REST API
  *                    in a Node.js for a image processing service written in C++.
  *
  * Author: Eugene Khvedchenya <ekhvedchenya@gmail.com>
@@ -26,16 +26,20 @@ using namespace node;
 
 namespace cloudcv
 {
-    class AnalyzeImageAlgorithmInfo : public AlgorithmInfo
+    class HoughLinesAlgorithmInfo : public AlgorithmInfo
     {
-        AlgorithmParamPtr _input[1];
+        AlgorithmParamPtr _input[4];
         AlgorithmParamPtr _output[1];
 
     public:
-        AnalyzeImageAlgorithmInfo()
+        HoughLinesAlgorithmInfo()
         {
-            _input[1] = TypedParameter<cv::Mat>::create("input");
-            _output[1] = TypedParameter<cv::Mat>::create("output");
+            _input[0].reset(new TypedParameter<ImageSource>("image"));
+            _input[1].reset(new TypedParameter<float>("rho", 1));
+            _input[2].reset(new TypedParameter<float>("theta", 1));
+            _input[3].reset(new TypedParameter<int>("threshold"));
+
+            _output[0].reset(new TypedParameter< std::vector<cv::Point2f> >("lines"));
         }
 
         std::string name() const override
@@ -78,36 +82,43 @@ namespace cloudcv
         }
     };
 
-    class AnalyzeImageAlgorithm : public Algorithm
+    class HoughLinesAlgorithm : public Algorithm
     {
+    protected:
     public:
+
+
         AlgorithmInfoPtr info() override
         {
             static std::shared_ptr<AlgorithmInfo> _info;
             if (!_info)
-                _info.reset(new AnalyzeImageAlgorithmInfo);
+                _info.reset(new HoughLinesAlgorithmInfo);
 
             return _info;
         }
 
         void process(const std::vector<ParameterBindingPtr>& inputArgs,
-                     std::vector<ParameterBindingPtr>& outputArgs) override
+            std::vector<ParameterBindingPtr>& outputArgs) override
         {
-            cv::Mat source = dynamic_cast<TypedBinding<cv::Mat>*>(inputArgs[0].get())->get();
-            cv::Mat& res = dynamic_cast<TypedBinding<cv::Mat>*>(outputArgs[1].get())->get();
+            ImageSource source = getInput<ImageSource>(inputArgs, 0);
+            const float rho = getInput<float>(inputArgs, 1);
+            const float theta = getInput<float>(inputArgs, 2);
+            const int threshold = getInput<float>(inputArgs, 2);
 
-            source.copyTo(res);
+            std::vector<cv::Point2f>&lines = getOutput<std::vector<cv::Point2f> >(outputArgs, 0);
+
+            cv::HoughLines(source.getImage(cv::IMREAD_GRAYSCALE), lines, rho, theta, threshold);
         }
 
         inline static AlgorithmPtr create()
         {
-            return Algorithm::create("AnalyzeImageAlgorithm");
+            return AlgorithmPtr(new HoughLinesAlgorithm());
         }
     };
 
-    NAN_METHOD(analyzeImage)
+    NAN_METHOD(houghLines)
     {
-        ProcessAlgorithm(AnalyzeImageAlgorithm::create(), args);
+        ProcessAlgorithm(HoughLinesAlgorithm::create(), args);
         NanReturnUndefined();
     }
 }

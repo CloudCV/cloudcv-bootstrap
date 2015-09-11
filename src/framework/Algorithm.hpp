@@ -4,51 +4,90 @@
 #include <vector>
 #include <v8.h>
 #include <opencv2/opencv.hpp>
+#include <nan.h>
+#include <functional>
+
+#include "framework/ImageSource.hpp"
 
 namespace cloudcv
 {
+    class ArgumentException : public std::runtime_error
+    {
+    public:
+        inline ArgumentException(std::string message) : std::runtime_error(message)
+        {
+
+        }
+    };
+
+    class MissingInputArgumentException : public ArgumentException
+    {
+    public:
+        inline MissingInputArgumentException(std::string argumentName)
+            : ArgumentException("Missing argument " + argumentName)
+        {
+
+        }
+    };
+
+    class ArgumentTypeMismatchException : public ArgumentException
+    {
+    public:
+        inline ArgumentTypeMismatchException(std::string argumentName, std::string actualType, std::string expectedType)
+            : ArgumentException("Incompatible type for " + argumentName + " expected " + expectedType + " got " + actualType)
+        {
+
+        }
+    };
+
+    
+
+    class AlgorithmParamVisitor;
+    class ParameterBinding;
+
     class AlgorithmParam
     {
     public:
 
-        virtual void visit(AlgorithmParamVisitor * visitor) default;
+        virtual bool visit(AlgorithmParamVisitor * visitor) = 0;
 
         virtual ~AlgorithmParam() = default;
         virtual std::string name() const = 0;
         virtual std::string type() const = 0;
-        
+
+        virtual std::shared_ptr<ParameterBinding> createDefault() = 0;
         virtual bool hasDefaultValue() const = 0;
     };
     
-    class AlgorithmParamVisitor
-    {
-    public:        
-        bool apply(AlgorithmParam* parameter) { return false; }
-        
-        virtual bool apply(TypedParameter<int>* parameter);
-        virtual bool apply(TypedParameter<int>* parameter);
-        virtual bool apply(TypedParameter<int>* parameter);
-    };
+
 
     template<typename T>
     class TypedParameter : public AlgorithmParam
     {
     public:
-        TypedParameter(const char * name) 
+        TypedParameter(const char * name)
             : m_name(name)
             , m_type(typeid(T).name())
             , m_hasDefaultValue(false)
         {
         }
 
-        TypedParameter(const char * name, T defaultValue) 
+        TypedParameter(const char * name, T defaultValue)
+            : m_name(name)
+            , m_type(typeid(T).name())
+            , m_hasDefaultValue(true)
+        {
+            m_default = [defaultValue]() { return defaultValue; };
+        }
+
+        TypedParameter(const char * name, std::function<T()> defaultValue)
             : m_name(name)
             , m_type(typeid(T).name())
             , m_hasDefaultValue(true)
             , m_default(defaultValue)
         {
         }
-    
+
         std::string name() const override
         {
             return m_name;
@@ -56,6 +95,7 @@ namespace cloudcv
 
         std::string type() const override
         {
+            return m_type;
         }
 
         bool hasDefaultValue() const override
@@ -63,18 +103,33 @@ namespace cloudcv
             return m_hasDefaultValue;
         }
 
-        bool visit(AlgorithmParamVisitor * visitor) override {
+        bool visit(AlgorithmParamVisitor * visitor) override 
+        {
             return visitor->apply(this);
         }
 
 
-        static std::shared_ptr<AlgorithmParam> create(const char * name) { return std::shared_ptr<AlgorithmParam>(new TypedParameter<T>(name)); }
+        std::shared_ptr<ParameterBinding> createDefault() override;
 
     private:
         std::string m_name;
         std::string m_type;
         bool        m_hasDefaultValue;
-        T           m_default;
+        std::function<T()> m_default;
+    };
+
+
+    class AlgorithmParamVisitor
+    {
+    public:
+        bool apply(AlgorithmParam* parameter) { return false; }
+
+        virtual bool apply(TypedParameter<bool>* parameter) { return false; };
+        virtual bool apply(TypedParameter<int>* parameter) { return false; };
+        virtual bool apply(TypedParameter<float>* parameter) { return false; };
+        virtual bool apply(TypedParameter<double>* parameter) { return false; };
+        virtual bool apply(TypedParameter<ImageSource>* parameter) { return false; };
+        virtual bool apply(TypedParameter<std::vector<cv::Point2f>>* parameter) { return false; };
     };
 
     typedef std::shared_ptr<AlgorithmParam> AlgorithmParamPtr;
@@ -91,7 +146,7 @@ namespace cloudcv
         //virtual ArgumentTypePtr getConstructorArgumentType(uint32_t argumentIndex) const = 0;
         virtual AlgorithmParamPtr getInputArgumentType(uint32_t argumentIndex) const = 0;
         virtual AlgorithmParamPtr getOutputArgumentType(uint32_t argumentIndex) const = 0;
-        
+
         virtual ~AlgorithmInfo() = default;
     private:
     };
@@ -106,29 +161,34 @@ namespace cloudcv
 
         virtual ~ParameterBinding() = default;
 
-        virtual Local<Value> marshalFromNative() = 0;
+        virtual v8::Local<v8::Value> marshalFromNative() const = 0;
     };
 
     struct no_deleter {
         template<typename T>
-        void operator()(T * v) {}
+        inline void operator()(T * v) {}
     };
 
     template<typename T>
     class TypedBinding : public ParameterBinding
     {
     public:
-        TypedBinding(const char * name)
+        TypedBinding(const std::string& name)
             : m_name(name)
             , m_type(typeid(T).name())
+            , m_value(nullptr)
         {
         }
 
-        TypedBinding(const char * name, const T& value)
+        TypedBinding(const std::string& name, const T& value)
             : m_name(name)
             , m_type(typeid(T).name())
-            , m_value(&value, no_deleter())
+            , m_value(const_cast<T*>(&value))
         {
+        }
+
+        static std::string static_name() {
+            return typeid(T).name();
         }
 
         virtual std::string name() const {
@@ -142,27 +202,36 @@ namespace cloudcv
 
         const T& get() const
         {
-            return *m_value.get();
+            assert(m_value != nullptr);
+            return *m_value;
         }
 
         T& get()
         {
-            return *m_value.get();
+            assert(m_value != nullptr);
+            return *m_value;
         }
 
-        Local<Value> marshalFromNative() override
+        v8::Local<v8::Value> marshalFromNative() const override
         {
             NanEscapableScope();
-            return NanEscapeScope(marshal(m_value));
+            return NanEscapeScope(marshal(get()));
         }
 
     private:
         std::string        m_name;
         std::string        m_type;
-        std::shared_ptr<T> m_value;
+        T*                 m_value;
     };
 
     typedef std::shared_ptr<ParameterBinding> ParameterBindingPtr;
+
+    template <typename T>
+    std::shared_ptr<ParameterBinding> TypedParameter<T>::createDefault()
+    {
+        return std::shared_ptr<ParameterBinding>(new TypedBinding<T>(m_name, m_default()));
+    }
+
 
     class InputParameter
     {
@@ -189,7 +258,27 @@ namespace cloudcv
         virtual AlgorithmInfoPtr info() = 0;
         virtual void process(const std::vector<ParameterBindingPtr>& inputArgs, std::vector<ParameterBindingPtr>& outputArgs) = 0;
 
-        static std::shared_ptr<Algorithm> create(std::string name);
+
+    protected:
+        template <typename T>
+        static inline  const T& getInput(const std::vector<ParameterBindingPtr>& inputArgs, int index)
+        {
+            auto * bind = dynamic_cast<const TypedBinding<T>*>(inputArgs[index].get());
+            if (bind == nullptr)
+                throw ArgumentTypeMismatchException(inputArgs[index]->name(), inputArgs[index]->type(), TypedBinding<T>::static_name());
+
+            return bind->get();
+        }
+
+        template <typename T>
+        static inline  T& getOutput(std::vector<ParameterBindingPtr>& outputArgs, int index)
+        {
+            auto * bind = dynamic_cast<TypedBinding<T>*>(outputArgs[index].get());
+            if (bind == nullptr)
+                throw ArgumentTypeMismatchException(outputArgs[index]->name(), outputArgs[index]->type(), TypedBinding<T>::static_name());
+
+            return bind->get();
+        }
     };
 
     typedef std::shared_ptr<Algorithm> AlgorithmPtr;

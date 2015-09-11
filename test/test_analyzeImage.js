@@ -22,13 +22,10 @@ describe('cv', function() {
     describe('analyzeImage', function() {
         
         it('process (File)', function(done) {
-            cloudcv.analyzeImage("test/data/opencv-logo.jpg", function(error, result) { 
+            cloudcv.houghLines({ "image": "test/data/opencv-logo.jpg"}, function(error, result) { 
                    
-                //console.log(inspect(error));
-                //console.log(inspect(result));
-                
-                assert.notStrictEqual(result, undefined);
-                assert.equal(4, result.dominantColors.length);
+                console.log(inspect(error));
+                console.log(inspect(result));
                 done();
             });
         });
@@ -36,11 +33,9 @@ describe('cv', function() {
         it('process (Buffer)', function(done) {
             var imageData = fs.readFileSync("test/data/opencv-logo.jpg");
 
-            cloudcv.analyzeImage(imageData, function(error, result) { 
-                //console.log(error, result);
-                   
-                assert.notStrictEqual(result, undefined);
-                assert.equal(4, result.dominantColors.length);
+            cloudcv.houghLines({ "image": imageData }, function(error, result) { 
+                console.log(inspect(error));
+                console.log(inspect(result));
                 done();
             });
         });      
