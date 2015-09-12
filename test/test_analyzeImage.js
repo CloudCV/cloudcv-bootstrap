@@ -19,8 +19,9 @@ var cloudcv = require("../cloudcv.js");
 
 describe('cv', function() {
 
-    describe('analyzeImage', function() {
+    describe('houghLines', function() {
         
+        //console.log(cloudcv.houghLines);
         it('process (File)', function(done) {
             cloudcv.houghLines({ "image": "test/data/opencv-logo.jpg"}, function(error, result) { 
                    

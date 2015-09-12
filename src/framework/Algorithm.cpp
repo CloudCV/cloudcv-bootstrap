@@ -8,32 +8,27 @@
 
 namespace cloudcv
 {
-
-
-    V8Result marshal(ParameterBindingPtr val)
-    {
-        NanEscapableScope();
-        return NanEscapeScope(val->marshalFromNative());
-    }
-
     class AlgorithmTask : public Job
     {
         AlgorithmPtr                     m_algorithm;
-        std::vector<ParameterBindingPtr> m_input;
-        std::vector<ParameterBindingPtr> m_output;
+        std::map<std::string, ParameterBindingPtr> m_input;
+        std::map<std::string, ParameterBindingPtr> m_output;
 
     public:
 
         AlgorithmTask(
             AlgorithmPtr alg, 
-            std::vector<ParameterBindingPtr> inArgs, 
-            std::vector<ParameterBindingPtr> outArgs,  
+            std::map<std::string, ParameterBindingPtr> inArgs,
+            std::map<std::string, ParameterBindingPtr> outArgs,
             NanCallback * callback)
             : Job(callback)
             , m_algorithm(alg)
             , m_input(inArgs)
             , m_output(outArgs)
         {
+            TRACE_FUNCTION(alg->name());
+            LOG_MESSAGE("Input arguments:" << inArgs.size());
+            LOG_MESSAGE("Output arguments:" << outArgs.size());
         }
 
     protected:
@@ -52,14 +47,17 @@ namespace cloudcv
             }
             catch (ArgumentException& err)
             {
+                LOG_MESSAGE("ArgumentException:" << err.what());
                 SetErrorMessage(err.what());
             }
             catch (cv::Exception& err)
             {
+                LOG_MESSAGE("cv::Exception:" << err.what());
                 SetErrorMessage(err.what());
             }
             catch (std::runtime_error& err)
             {
+                LOG_MESSAGE("std::runtime_error:" << err.what());
                 SetErrorMessage(err.what());
             }
         }
@@ -76,7 +74,7 @@ namespace cloudcv
 
             for (const auto& arg : m_output)
             {
-                outputArgument->Set(marshal(arg->name()), marshal(arg));
+                outputArgument->Set(marshal(arg->name()), arg->marshalFromNative());
             }
 
             return NanEscapeScope(outputArgument);
@@ -103,26 +101,21 @@ namespace cloudcv
         {
             auto info = algorithm->info();
 
-            std::vector<ParameterBindingPtr> inArgs, outArgs;
+            std::map<std::string,ParameterBindingPtr> inArgs, outArgs;
 
             for (size_t inArgIdx = 0; inArgIdx < info->inputArguments(); inArgIdx++)
             {
                 auto arg = info->getInputArgumentType(inArgIdx);
-
-                if (!arg->hasDefaultValue())
-                {
-                    Local<Value> argumentValue = inputArguments->Get(marshal(arg->name()));
-
-                    auto bind = InputParameter::Bind(arg, argumentValue);
-                    inArgs.push_back(bind);
-                }
+                Local<Value> argumentValue = inputArguments->Get(marshal(arg->name()));
+                auto bind = InputParameter::Bind(arg, argumentValue);
+                inArgs.insert(std::make_pair(arg->name(), bind));
             }
 
             for (size_t outArgIdx = 0; outArgIdx < info->outputArguments(); outArgIdx++)
             {
                 auto arg = info->getOutputArgumentType(outArgIdx);
                 auto bind = OutputParameter::Create(arg);
-                outArgs.push_back(bind);
+                outArgs.insert(std::make_pair(arg->name(), bind));
             }
 
             NanCallback *nanCallback = new NanCallback(resultsCallback);
@@ -131,7 +124,7 @@ namespace cloudcv
         }
         else if (!error.empty())
         {
-            std::cout << "Cannot parse input arguments: " << error.c_str() << std::endl;
+            LOG_MESSAGE("Cannot parse input arguments: " << error.c_str());
             NanThrowTypeError(error.c_str());
         }
 

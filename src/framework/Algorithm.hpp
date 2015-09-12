@@ -6,8 +6,11 @@
 #include <opencv2/opencv.hpp>
 #include <nan.h>
 #include <functional>
+#include <map>
 
 #include "framework/ImageSource.hpp"
+#include "framework/marshal/marshal.hpp"
+#include "framework/marshal/opencv.hpp"
 
 namespace cloudcv
 {
@@ -103,11 +106,7 @@ namespace cloudcv
             return m_hasDefaultValue;
         }
 
-        bool visit(AlgorithmParamVisitor * visitor) override 
-        {
-            return visitor->apply(this);
-        }
-
+        bool visit(AlgorithmParamVisitor * visitor) override;
 
         std::shared_ptr<ParameterBinding> createDefault() override;
 
@@ -131,6 +130,12 @@ namespace cloudcv
         virtual bool apply(TypedParameter<ImageSource>* parameter) { return false; };
         virtual bool apply(TypedParameter<std::vector<cv::Point2f>>* parameter) { return false; };
     };
+
+    template<typename T>
+    bool TypedParameter<T>::visit(AlgorithmParamVisitor * visitor) 
+    {
+        return visitor->apply(this);
+    }
 
     typedef std::shared_ptr<AlgorithmParam> AlgorithmParamPtr;
 
@@ -191,11 +196,11 @@ namespace cloudcv
             return typeid(T).name();
         }
 
-        virtual std::string name() const {
+        virtual std::string name() const override {
             return m_name;
         }
 
-        virtual std::string type() const {
+        virtual std::string type() const override {
             return m_type;
         }
 
@@ -215,7 +220,8 @@ namespace cloudcv
         v8::Local<v8::Value> marshalFromNative() const override
         {
             NanEscapableScope();
-            return NanEscapeScope(marshal(get()));
+            const T& val = get();
+            return NanEscapeScope(marshal(val));
         }
 
     private:
@@ -256,14 +262,24 @@ namespace cloudcv
     public:
         virtual ~Algorithm() = default;
         virtual AlgorithmInfoPtr info() = 0;
-        virtual void process(const std::vector<ParameterBindingPtr>& inputArgs, std::vector<ParameterBindingPtr>& outputArgs) = 0;
+        virtual void process(
+            const std::map<std::string, ParameterBindingPtr>& inArgs,
+            const std::map<std::string, ParameterBindingPtr>& outArgs,
+            ) = 0;
 
 
     protected:
         template <typename T>
-        static inline  const T& getInput(const std::vector<ParameterBindingPtr>& inputArgs, int index)
+        static inline  const T& getInput(const std::map<std::string, ParameterBindingPtr>& inputArgs, 
+                                         const std::string& name)
         {
-            auto * bind = dynamic_cast<const TypedBinding<T>*>(inputArgs[index].get());
+            auto it = inputArgs->find(name);
+
+            if (inputArgs.end() == it) {
+                // TODO: Check for null
+            }
+
+            auto * bind = dynamic_cast<const TypedBinding<T>*>(it->second.get());
             if (bind == nullptr)
                 throw ArgumentTypeMismatchException(inputArgs[index]->name(), inputArgs[index]->type(), TypedBinding<T>::static_name());
 
@@ -271,9 +287,16 @@ namespace cloudcv
         }
 
         template <typename T>
-        static inline  T& getOutput(std::vector<ParameterBindingPtr>& outputArgs, int index)
+        static inline  T& getOutput(const std::map<std::string, ParameterBindingPtr>& outputArgs, 
+                                    const std::string& name)
         {
-            auto * bind = dynamic_cast<TypedBinding<T>*>(outputArgs[index].get());
+            auto it = outputArgs->find(name);
+
+            if (inputArgs.end() == it) {
+                // TODO: Check for null
+            }
+
+            auto * bind = dynamic_cast<TypedBinding<T>*>(it->second.get());
             if (bind == nullptr)
                 throw ArgumentTypeMismatchException(outputArgs[index]->name(), outputArgs[index]->type(), TypedBinding<T>::static_name());
 

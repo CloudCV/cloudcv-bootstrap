@@ -15,7 +15,6 @@
 #include "framework/NanCheck.hpp"
 #include "framework/Job.hpp"
 #include "framework/ImageSource.hpp"
-#include "framework/Async.hpp"
 
 #include <nan.h>
 
@@ -229,42 +228,6 @@ namespace cloudcv
         }
     }
 
-    NAN_METHOD(ImageView::Thumbnail)
-    {
-        SETUP_FUNCTION(ImageView);
-        Local<Function> imageCallback;
-
-        int w, h;
-        std::string error;
-        if (NanCheck(args)
-            .Error(&error)
-            .ArgumentsCount(3)
-            .Argument(0).Bind(w)
-            .Argument(1).Bind(h)
-            .Argument(2).IsFunction().Bind(imageCallback))
-        {
-            NanCallback *callback = new NanCallback(imageCallback);
-
-            auto task = [w,h, self](AsyncReturnHelper& result, AsyncErrorFunction error) {
-                if (self->mImage.empty()) {
-                     error("Image is empty");
-                     return;                    
-                }
-
-                cv::Mat thumb;
-                cv::resize(self->mImage, thumb, cv::Size(w,h));
-                result(thumb);
-            };
-            
-            Async(task, callback);
-            NanReturnUndefined();
-        }
-        else if (!error.empty())
-        {
-            NanThrowTypeError(error.c_str());
-        }
-    }
-
     NAN_METHOD(ImageView::AsPngDataUri)
     {
         SETUP_FUNCTION(ImageView);
@@ -420,64 +383,10 @@ namespace cloudcv
         NODE_SET_PROTOTYPE_METHOD(tpl, "asPngDataUri", ImageView::AsPngDataUri);
         NODE_SET_PROTOTYPE_METHOD(tpl, "asObject", ImageView::AsObject);
 
-        NODE_SET_PROTOTYPE_METHOD(tpl, "thumbnail", ImageView::Thumbnail);
-
         NanAssignPersistent(constructor, tpl);
         //constructor = Persistent<Function>::New();
         exports->Set(NanNew<String>("ImageView"), NanNew<FunctionTemplate>(constructor)->GetFunction());
         //std::cout << "ImageView::Init finished" << std::endl;
-    }
-
-    NAN_METHOD(loadImage)
-    {
-        TRACE_FUNCTION;
-        NanEscapableScope();
-
-        std::string     imagePath;
-        std::string     error;
-        Local<Object>   imageBuffer;
-        Local<Function> loadCallback;
-
-        if (NanCheck(args)
-            .Error(&error)
-            .ArgumentsCount(2)
-            .Argument(0).IsString().Bind(imagePath)
-            .Argument(1).IsFunction().Bind(loadCallback))
-        {
-            NanCallback *callback = new NanCallback(loadCallback);
-            auto task = [imagePath](AsyncReturnHelper& result, AsyncErrorFunction error) {
-                cv::Mat image = ImageSource::CreateImageSource(imagePath).getImage();
-                if (image.empty())
-                    error("Cannot read image from the file");
-                else
-                    result(image);
-            };
-            
-            Async(task, callback);
-            NanReturnUndefined();
-        }
-        else if (NanCheck(args)
-            .Error(&error)
-            .ArgumentsCount(2)
-            .Argument(0).IsBuffer().Bind(imageBuffer)
-            .Argument(1).IsFunction().Bind(loadCallback))
-        {
-            NanCallback *callback = new NanCallback(loadCallback);
-            auto task = [imageBuffer](AsyncReturnHelper& result, AsyncErrorFunction error) {
-                cv::Mat image = ImageSource::CreateImageSource(imageBuffer).getImage();
-                if (image.empty())
-                    error("Cannot decode image from the buffer");
-                else
-                    result(image);
-            };
-            
-            Async(task, callback);
-            NanReturnUndefined();
-        }
-        else if (!error.empty())
-        {
-            NanThrowTypeError(error.c_str());                
-        }
     }
 
     NAN_METHOD(ImageView::New)

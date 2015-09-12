@@ -10,9 +10,10 @@
 *  - http://computer-vision-talks.com
 *
 **********************************************************************************/
+#include <nan.h>
+
 #include "ImageSource.hpp"
 #include "Algorithm.hpp"
-#include <nan.h>
 #include "framework/marshal/marshal.hpp"
 
 using namespace v8;

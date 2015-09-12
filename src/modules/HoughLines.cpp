@@ -11,7 +11,6 @@
  *
  **********************************************************************************/
 
-#include "modules/analyze/AnalyzeImageAlgorithm.hpp"
 #include "framework/marshal/marshal.hpp"
 #include "framework/NanCheck.hpp"
 #include "framework/Job.hpp"
@@ -97,15 +96,17 @@ namespace cloudcv
             return _info;
         }
 
-        void process(const std::vector<ParameterBindingPtr>& inputArgs,
-            std::vector<ParameterBindingPtr>& outputArgs) override
+        void process(
+            const std::map<std::string, ParameterBindingPtr>& inArgs,
+            const std::map<std::string, ParameterBindingPtr>& outArgs
+            ) override
         {
-            ImageSource source = getInput<ImageSource>(inputArgs, 0);
-            const float rho = getInput<float>(inputArgs, 1);
-            const float theta = getInput<float>(inputArgs, 2);
-            const int threshold = getInput<float>(inputArgs, 2);
+            ImageSource source = getInput<ImageSource>(inputArgs, "image");
+            const float rho = getInput<float>(inputArgs, "rho");
+            const float theta = getInput<float>(inputArgs, "theta");
+            const int threshold = getInput<float>(inputArgs, "threshold");
 
-            std::vector<cv::Point2f>&lines = getOutput<std::vector<cv::Point2f> >(outputArgs, 0);
+            std::vector<cv::Point2f>&lines = getOutput<std::vector<cv::Point2f> >(outputArgs, "lines");
 
             cv::HoughLines(source.getImage(cv::IMREAD_GRAYSCALE), lines, rho, theta, threshold);
         }

@@ -38,8 +38,6 @@ namespace cloudcv
         static v8::Persistent<v8::FunctionTemplate> constructor;
     private:
         
-        static NAN_METHOD(Thumbnail);
-
         static NAN_METHOD(AsJpegStream);
         static NAN_METHOD(AsJpegDataUri);
 
@@ -57,7 +55,5 @@ namespace cloudcv
     private:
         cv::Mat mImage;    
     };
-
-    NAN_METHOD(loadImage); // Accessible via cloucv.loadImage
 }
 
