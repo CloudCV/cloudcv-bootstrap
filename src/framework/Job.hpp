@@ -19,11 +19,11 @@ namespace cloudcv {
     /**
      * @brief A base class for asynchronous task running in worker pool
      */
-    class Job : public NanAsyncWorker
+    class Job : public Nan::AsyncWorker
     {
     public:
         virtual ~Job();
-		explicit Job(NanCallback *callback);
+		explicit Job(Nan::Callback *callback);
 
         void Execute() override;
 

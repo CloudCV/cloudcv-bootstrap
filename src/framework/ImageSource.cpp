@@ -49,16 +49,15 @@ namespace cloudcv
     {
     public:
         BufferImageSource(Local<Object> imageBuffer)
-        {
-            NanAssignPersistent(mImageBuffer, imageBuffer);
-
+            : mImageBuffer(imageBuffer)
+        {            
             mImageData    = Buffer::Data(imageBuffer);
             mImageDataLen = Buffer::Length(imageBuffer);
         }
 
         virtual ~BufferImageSource()
         {
-            NanDisposePersistent(mImageBuffer);
+            mImageBuffer.Reset();
         }
 
         cv::Mat getImage(int flags)
@@ -67,7 +66,7 @@ namespace cloudcv
         }
 
     private:
-        Persistent<Object>       mImageBuffer;
+        Nan::Persistent<Object>       mImageBuffer;
         char                   * mImageData;
         size_t                   mImageDataLen;
     };

@@ -34,7 +34,7 @@ namespace cloudcv
         LOG_TRACE_MESSAGE(mMessage);
     }
 
-    typedef std::function<bool(_NAN_METHOD_ARGS_TYPE) > InitFunction;
+    typedef std::function<bool(Nan::NAN_METHOD_ARGS_TYPE) > InitFunction;
 
     class NanMethodArgBinding;
     class NanCheckArguments;
@@ -47,7 +47,7 @@ namespace cloudcv
 
     NanMethodArgBinding& NanMethodArgBinding::IsBuffer()
     {
-        auto bind = [this](_NAN_METHOD_ARGS_TYPE args)
+        auto bind = [this](Nan::NAN_METHOD_ARGS_TYPE args)
         {
             bool isBuf = node::Buffer::HasInstance(args[mArgIndex]);
             LOG_TRACE_MESSAGE("Checking whether argument is function:" << isBuf);
@@ -63,7 +63,7 @@ namespace cloudcv
 
     NanMethodArgBinding& NanMethodArgBinding::IsFunction()
     {
-        auto bind = [this](_NAN_METHOD_ARGS_TYPE args)
+        auto bind = [this](Nan::NAN_METHOD_ARGS_TYPE args)
         {
             bool isFn = args[mArgIndex]->IsFunction();
             LOG_TRACE_MESSAGE("Checking whether argument is function:" << isFn);
@@ -79,7 +79,7 @@ namespace cloudcv
 
     NanMethodArgBinding& NanMethodArgBinding::IsArray()
     {
-        auto bind = [this](_NAN_METHOD_ARGS_TYPE args)
+        auto bind = [this](Nan::NAN_METHOD_ARGS_TYPE args)
         {
             bool isArr = args[mArgIndex]->IsArray();
             LOG_TRACE_MESSAGE("Checking whether argument is array:" << isArr);
@@ -94,7 +94,7 @@ namespace cloudcv
 
     NanMethodArgBinding& NanMethodArgBinding::IsObject()
     {
-        auto bind = [this](_NAN_METHOD_ARGS_TYPE args)
+        auto bind = [this](Nan::NAN_METHOD_ARGS_TYPE args)
         {
             bool isArr = args[mArgIndex]->IsObject();
             LOG_TRACE_MESSAGE("Checking whether argument is object:" << isArr);
@@ -109,7 +109,7 @@ namespace cloudcv
 
     NanMethodArgBinding& NanMethodArgBinding::IsString()
     {
-        auto bind = [this](_NAN_METHOD_ARGS_TYPE args)
+        auto bind = [this](Nan::NAN_METHOD_ARGS_TYPE args)
         {
             bool isStr = args[mArgIndex]->IsString() || args[mArgIndex]->IsStringObject();
             LOG_TRACE_MESSAGE("Checking whether argument is string:" << isStr);
@@ -125,7 +125,7 @@ namespace cloudcv
 
     NanMethodArgBinding& NanMethodArgBinding::NotNull()
     {
-        auto bind = [this](_NAN_METHOD_ARGS_TYPE args)
+        auto bind = [this](Nan::NAN_METHOD_ARGS_TYPE args)
         {
             if (args[mArgIndex]->IsNull())
             {
@@ -137,9 +137,9 @@ namespace cloudcv
         return *this;
     }
 
-    NanCheckArguments::NanCheckArguments(_NAN_METHOD_ARGS_TYPE args)
+    NanCheckArguments::NanCheckArguments(Nan::NAN_METHOD_ARGS_TYPE args)
         : m_args(args)
-        , m_init([](_NAN_METHOD_ARGS_TYPE args) { return true; })
+        , m_init([](Nan::NAN_METHOD_ARGS_TYPE args) { return true; })
         , m_error(0)
     {
     }
@@ -147,7 +147,7 @@ namespace cloudcv
 
     NanCheckArguments& NanCheckArguments::ArgumentsCount(int count)
     {
-        return AddAndClause([count](_NAN_METHOD_ARGS_TYPE args)
+        return AddAndClause([count](Nan::NAN_METHOD_ARGS_TYPE args)
         {
             if (args.Length() != count)
                 throw ArgumentMismatchException(args.Length(), count);
@@ -158,7 +158,7 @@ namespace cloudcv
 
     NanCheckArguments& NanCheckArguments::ArgumentsCount(int argsCount1, int argsCount2)
     {
-        return AddAndClause([argsCount1, argsCount2](_NAN_METHOD_ARGS_TYPE args)
+        return AddAndClause([argsCount1, argsCount2](Nan::NAN_METHOD_ARGS_TYPE args)
         {
             if (args.Length() != argsCount1 || args.Length() != argsCount2)
                 throw ArgumentMismatchException(args.Length(), { argsCount1, argsCount2 });
@@ -213,7 +213,7 @@ namespace cloudcv
     NanCheckArguments& NanCheckArguments::AddAndClause(InitFunction rightCondition)
     {
         InitFunction prevInit = m_init;
-        InitFunction newInit = [prevInit, rightCondition](_NAN_METHOD_ARGS_TYPE args) {
+        InitFunction newInit = [prevInit, rightCondition](Nan::NAN_METHOD_ARGS_TYPE args) {
             return prevInit(args) && rightCondition(args);
         };
         m_init = newInit;
@@ -221,7 +221,7 @@ namespace cloudcv
     }
 
 
-    NanCheckArguments NanCheck(_NAN_METHOD_ARGS_TYPE args)
+    NanCheckArguments NanCheck(Nan::NAN_METHOD_ARGS_TYPE args)
     {
         return std::move(NanCheckArguments(args));
     }

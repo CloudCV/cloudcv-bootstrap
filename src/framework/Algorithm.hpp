@@ -132,7 +132,7 @@ namespace cloudcv
     };
 
     template<typename T>
-    bool TypedParameter<T>::visit(AlgorithmParamVisitor * visitor) 
+    inline bool TypedParameter<T>::visit(AlgorithmParamVisitor * visitor) 
     {
         return visitor->apply(this);
     }
@@ -219,9 +219,9 @@ namespace cloudcv
 
         v8::Local<v8::Value> marshalFromNative() const override
         {
-            NanEscapableScope();
+            Nan::EscapableHandleScope scope;
             const T& val = get();
-            return NanEscapeScope(marshal(val));
+            return scope.Escape(marshal(val));
         }
 
     private:
@@ -310,6 +310,6 @@ namespace cloudcv
 
     typedef std::shared_ptr<Algorithm> AlgorithmPtr;
 
-    void ProcessAlgorithm(AlgorithmPtr algorithm, const v8::FunctionCallbackInfo<v8::Value>& args);
+    void ProcessAlgorithm(AlgorithmPtr algorithm, Nan::NAN_METHOD_ARGS_TYPE args);
 
 }

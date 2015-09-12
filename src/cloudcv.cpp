@@ -13,18 +13,16 @@
 
 #include <nan.h>
 
-#include "framework/ImageView.hpp"
 #include "cloudcv.hpp"
 
 using namespace v8;
 using namespace node;
 using namespace cloudcv;
+using namespace Nan;
 
-void RegisterModule(Handle<Object> target)
+NAN_MODULE_INIT(RegisterModule)
 {
-    NODE_SET_METHOD(target, "houghLines", houghLines);
-
-    ImageView::Init(target);
+    Set(target, New<String>("houghLines").ToLocalChecked(), GetFunction(New<FunctionTemplate>(houghLines)).ToLocalChecked());
 }
 
 NODE_MODULE(cloudcv, RegisterModule);

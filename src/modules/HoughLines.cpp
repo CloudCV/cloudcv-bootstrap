@@ -101,12 +101,12 @@ namespace cloudcv
             const std::map<std::string, ParameterBindingPtr>& outArgs
             ) override
         {
-            ImageSource source = getInput<ImageSource>(inputArgs, "image");
-            const float rho = getInput<float>(inputArgs, "rho");
-            const float theta = getInput<float>(inputArgs, "theta");
-            const int threshold = getInput<float>(inputArgs, "threshold");
+            ImageSource source = getInput<ImageSource>(inArgs, "image");
+            const float rho = getInput<float>(inArgs, "rho");
+            const float theta = getInput<float>(inArgs, "theta");
+            const int threshold = getInput<int>(inArgs, "threshold");
 
-            std::vector<cv::Point2f>&lines = getOutput<std::vector<cv::Point2f> >(outputArgs, "lines");
+            std::vector<cv::Point2f>&lines = getOutput<std::vector<cv::Point2f> >(outArgs, "lines");
 
             cv::HoughLines(source.getImage(cv::IMREAD_GRAYSCALE), lines, rho, theta, threshold);
         }
@@ -119,7 +119,6 @@ namespace cloudcv
 
     NAN_METHOD(houghLines)
     {
-        ProcessAlgorithm(HoughLinesAlgorithm::create(), args);
-        NanReturnUndefined();
+        ProcessAlgorithm(HoughLinesAlgorithm::create(), info);
     }
 }

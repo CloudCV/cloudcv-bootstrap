@@ -4,7 +4,6 @@
 #include <opencv2/opencv.hpp>
 
 #include "framework/marshal/marshal.hpp"
-#include "framework/ImageView.hpp"
 
 namespace cloudcv
 {
@@ -43,7 +42,7 @@ namespace cloudcv
             template<typename OutputArchive>
             static inline void save(OutputArchive& ar, const cv::String& val)
             {
-                ar = NanNew<v8::String>(val.c_str());
+                ar = Nan::New<v8::String>(val.c_str());
             }
         };
 
@@ -148,7 +147,8 @@ namespace cloudcv
             template<typename OutputArchive>
             static inline void save(OutputArchive& ar, const cv::Mat& val)
             {
-                ar = cloudcv::ImageView::ViewForImage(val);
+                // TODO: Implement
+                //ar = cloudcv::ImageView::ViewForImage(val);
             }
         };
         

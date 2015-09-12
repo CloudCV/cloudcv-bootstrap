@@ -20,7 +20,7 @@ namespace cloudcv
             AlgorithmPtr alg, 
             std::map<std::string, ParameterBindingPtr> inArgs,
             std::map<std::string, ParameterBindingPtr> outArgs,
-            NanCallback * callback)
+            Nan::Callback * callback)
             : Job(callback)
             , m_algorithm(alg)
             , m_input(inArgs)
@@ -68,26 +68,26 @@ namespace cloudcv
         {
             using namespace v8;
 
-            NanEscapableScope();
+            Nan::EscapableHandleScope scope;
 
-            Local<Object> outputArgument = NanNew<Object>();
+            Local<Object> outputArgument = Nan::New<Object>();
 
             for (const auto& arg : m_output)
             {
-                outputArgument->Set(marshal(arg->name()), arg->marshalFromNative());
+                outputArgument->Set(marshal(arg.first), arg.second->marshalFromNative());
             }
 
-            return NanEscapeScope(outputArgument);
+            return scope.Escape(outputArgument);
         }
     };
 
-    void ProcessAlgorithm(AlgorithmPtr algorithm, const v8::FunctionCallbackInfo<v8::Value>& args)
+    void ProcessAlgorithm(AlgorithmPtr algorithm, Nan::NAN_METHOD_ARGS_TYPE args)
     {
         using namespace v8;
         using namespace cloudcv;
 
         TRACE_FUNCTION;
-        NanEscapableScope();
+        Nan::HandleScope scope;
 
         Local<Object>   inputArguments;
         Local<Function> resultsCallback;
@@ -118,17 +118,15 @@ namespace cloudcv
                 outArgs.insert(std::make_pair(arg->name(), bind));
             }
 
-            NanCallback *nanCallback = new NanCallback(resultsCallback);
-            NanAsyncQueueWorker(new AlgorithmTask(algorithm, inArgs, outArgs, nanCallback));
+            Nan::Callback *callback = new Nan::Callback(resultsCallback);
+            Nan::AsyncQueueWorker(new AlgorithmTask(algorithm, inArgs, outArgs, callback));
 
         }
         else if (!error.empty())
         {
             LOG_TRACE_MESSAGE("Cannot parse input arguments: " << error.c_str());
-            NanThrowTypeError(error.c_str());
+            Nan::ThrowTypeError(error.c_str());
         }
-
-        NanReturnUndefined();
     }
 
 

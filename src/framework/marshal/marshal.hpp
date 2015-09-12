@@ -15,7 +15,7 @@
 typedef v8::Local<v8::Value> V8Result;
 
 template <typename T>
-std::string lexical_cast(const T& value)
+inline std::string lexical_cast(const T& value)
 {
     std::ostringstream sSteam;
     sSteam << value;
@@ -60,12 +60,12 @@ namespace cloudcv
             const char * name;
             T& value;
 
-            explicit nvp_struct(const char * name_, T & value_) 
+            explicit inline nvp_struct(const char * name_, T & value_)
                 : name(name_)
                 , value(value_)        
             {}
 
-            nvp_struct(const nvp_struct & rhs) 
+            inline nvp_struct(const nvp_struct & rhs)
                 : name(rhs.name)
                 , value(rhs.value)        
             {}
@@ -176,7 +176,7 @@ namespace cloudcv
             template<typename OutputArchive>
             static inline void save(OutputArchive& ar, const std::vector<T>& val)
             {
-                auto result = NanNew<v8::Array>( (int)val.size());
+                auto result = Nan::New<v8::Array>( (int)val.size());
 
                 for (uint32_t i = 0; i < val.size(); i++)
                 {
@@ -213,14 +213,14 @@ namespace cloudcv
             template<typename InputArchive>
             static inline void load(InputArchive& ar, std::string& val)
             {
-                NanAsciiString cStr(ar);
+                Nan::Utf8String cStr(ar);
                 val = std::string(*cStr, cStr.length());
             }
 
             template<typename OutputArchive>
             static inline void save(OutputArchive& ar, const std::string& val)
             {
-                ar = NanNew<v8::String>(val.c_str());
+                ar = Nan::New<v8::String>(val).ToLocalChecked();
             }
         };
 
@@ -243,7 +243,7 @@ namespace cloudcv
             template<typename OutputArchive>
             static inline void save(OutputArchive& ar, const std::map<K, V>& map_val)
             {
-                v8::Local<v8::Array> result = NanNew<v8::Array>();
+                v8::Local<v8::Array> result = Nan::New<v8::Array>().ToLocalChecked();
                 for (typename std::map<K, V>::const_iterator i = map_val.begin(); i != map_val.end(); ++i)
                 {
                     result->Set(i, marshal(*i));
@@ -309,7 +309,7 @@ namespace cloudcv
             template<typename OutputArchive>
             static inline void save(OutputArchive& ar, T const (&val)[N])
             {
-                v8::Local<v8::Array> result = NanNew<v8::Array>(N);
+                v8::Local<v8::Array> result = Nan::New<v8::Array>(N);
 
                 for (uint32_t i = 0; i < N; i++)
                 {
@@ -338,7 +338,7 @@ namespace cloudcv
             template<typename OutputArchive>
             static inline void save(OutputArchive& ar, const std::array<T, N>& val)
             {
-                v8::Local<v8::Array> result = NanNew<v8::Array>(static_cast<int>(N));
+                v8::Local<v8::Array> result = Nan::New<v8::Array>(static_cast<int>(N));
 
                 for (uint32_t i = 0; i < N; i++)
                 {
@@ -405,7 +405,7 @@ namespace cloudcv
             template<typename T>
             inline void save(const T& val)
             {
-                _dst = NanNew(val);
+                _dst = Nan::New(val);
             }
 
             template<typename T>
@@ -413,10 +413,10 @@ namespace cloudcv
             {
                 if (_dst.IsEmpty() || !_dst->IsObject())
                 {
-                    _dst = NanNew<v8::Object>();
+                    _dst = Nan::New<v8::Object>();
                 }
 
-                _dst->ToObject()->Set(NanNew<v8::String>(val.name), marshal(val.value));
+                _dst->ToObject()->Set(Nan::New<v8::String>(val.name).ToLocalChecked(), marshal(val.value));
             }
 
             template<typename T>
@@ -486,12 +486,13 @@ namespace cloudcv
                     throw MarshalTypeMismatchException("Underlying instance is not an object");
                 }
 
-                auto prop = _src->ToObject()->Get(NanNew<v8::String>(val.name));
+                auto prop = _src->ToObject()->Get(Nan::New<v8::String>(val.name).ToLocalChecked());
                 if (prop.IsEmpty())
                 {
                     LOG_TRACE_MESSAGE("Object does not contains property " << val.name);
                     throw MarshalTypeMismatchException("Object does not contains property");
                 }
+
                 val.value = marshal<T>(prop);
             }
 
@@ -542,12 +543,12 @@ namespace cloudcv
     template <typename T>
     inline V8Result marshal(const T& val)
     {
-        NanEscapableScope();
+        Nan::EscapableHandleScope scope;
 
         serialization::SaveArchive oa;
         oa & val;
 
-        return NanEscapeScope(oa._dst);
+        return scope.Escape(oa._dst);
     }
 
 

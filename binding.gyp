@@ -19,9 +19,6 @@
 
                 "src/framework/marshal/marshal.hpp",
                 "src/framework/marshal/opencv.hpp",                
-                
-                "src/framework/ImageView.hpp",                
-                "src/framework/ImageView.cpp",
 
                 "src/framework/ImageSource.hpp",                
                 "src/framework/ImageSource.cpp",

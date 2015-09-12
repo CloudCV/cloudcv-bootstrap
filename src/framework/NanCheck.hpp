@@ -47,7 +47,7 @@ namespace cloudcv
         std::string mMessage;
     };
 
-    typedef std::function<bool(_NAN_METHOD_ARGS_TYPE) > InitFunction;
+    typedef std::function<bool(Nan::NAN_METHOD_ARGS_TYPE args) > InitFunction;
 
     class NanMethodArgBinding;
     class NanCheckArguments;
@@ -60,7 +60,7 @@ namespace cloudcv
     class NanCheckArguments
     {
     public:
-        NanCheckArguments(_NAN_METHOD_ARGS_TYPE args);
+        NanCheckArguments(Nan::NAN_METHOD_ARGS_TYPE args);
 
         NanCheckArguments& ArgumentsCount(int count);
         NanCheckArguments& ArgumentsCount(int argsCount1, int argsCount2);
@@ -76,7 +76,7 @@ namespace cloudcv
         NanCheckArguments& Error(std::string * error);
 
     private:
-        _NAN_METHOD_ARGS_TYPE m_args;
+        Nan::NAN_METHOD_ARGS_TYPE m_args;
         InitFunction          m_init;
         std::string         * m_error;
     };
@@ -143,7 +143,7 @@ namespace cloudcv
 
     //////////////////////////////////////////////////////////////////////////
 
-    NanCheckArguments NanCheck(_NAN_METHOD_ARGS_TYPE args);
+    NanCheckArguments NanCheck(Nan::NAN_METHOD_ARGS_TYPE args);
 
     //////////////////////////////////////////////////////////////////////////
     // Template functions implementation
@@ -151,7 +151,7 @@ namespace cloudcv
     template <typename T>
     NanCheckArguments& NanMethodArgBinding::Bind(v8::Local<T>& value)
     {
-        return mParent.AddAndClause([this, &value](_NAN_METHOD_ARGS_TYPE args) {
+        return mParent.AddAndClause([this, &value](Nan::NAN_METHOD_ARGS_TYPE args) {
             value = args[mArgIndex].As<T>();
             return true;
         });
@@ -161,7 +161,7 @@ namespace cloudcv
     template <typename T>
     NanCheckArguments& NanMethodArgBinding::Bind(T& value)
     {
-        return mParent.AddAndClause([this, &value](_NAN_METHOD_ARGS_TYPE args) {
+        return mParent.AddAndClause([this, &value](Nan::NAN_METHOD_ARGS_TYPE args) {
             LOG_TRACE_MESSAGE("Binding argument " << mArgIndex);
             try {
                 value = marshal<T>(args[mArgIndex]);
@@ -178,7 +178,7 @@ namespace cloudcv
     template <typename T1, typename T2>
     NanCheckArguments& NanMethodArgBinding::BindAny(T1& value1, T2& value2)
     {
-        return mParent.AddAndClause([this, &value1, &value2](_NAN_METHOD_ARGS_TYPE args) {
+        return mParent.AddAndClause([this, &value1, &value2](Nan::NAN_METHOD_ARGS_TYPE args) {
             value1 = marshal<T1>(args[mArgIndex]);
             value2 = marshal<T2>(args[mArgIndex]);
             return true;
@@ -206,7 +206,7 @@ namespace cloudcv
     template <typename T>
     NanCheckArguments& NanArgStringEnum<T>::Bind(T& value)
     {
-        return mOwner.mParent.AddAndClause([this, &value](_NAN_METHOD_ARGS_TYPE args) {
+        return mOwner.mParent.AddAndClause([this, &value](Nan::NAN_METHOD_ARGS_TYPE args) {
             std::string key = marshal<std::string>(args[mArgIndex]);
             return TryMatchStringEnum(key, value);
         });

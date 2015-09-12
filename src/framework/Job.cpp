@@ -18,8 +18,8 @@
 
 namespace cloudcv {
 
-    Job::Job(NanCallback *callback)
-        : NanAsyncWorker(callback)
+    Job::Job(Nan::Callback *callback)
+        : Nan::AsyncWorker(callback)
     {
     }
 
@@ -45,10 +45,10 @@ namespace cloudcv {
 
     void Job::HandleOKCallback()
     {
-        NanEscapableScope();
+        Nan::HandleScope scope;
 
         v8::Local<v8::Value> argv[] = {
-            NanNull(),
+            Nan::Null(),
             CreateCallbackResult()
         };
 
@@ -59,6 +59,6 @@ namespace cloudcv {
     {
         LOG_TRACE_MESSAGE("Error message:" << errorMessage);
 
-        NanAsyncWorker::SetErrorMessage(errorMessage.c_str());
+        Nan::AsyncWorker::SetErrorMessage(errorMessage.c_str());
     }
 }
