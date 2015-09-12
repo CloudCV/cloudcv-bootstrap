@@ -17,7 +17,7 @@
     "jade": "^1.11.0",
     "method-override": "^2.3.1",
     "multer": "^0.1.7",
-    "nan": "1.7.0",
+    "nan": "^2.0.9",
     "native-opencv": "3.0.0-b",
     "pmx": "^0.2.33",
     "request": "*",
