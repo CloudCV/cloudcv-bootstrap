@@ -264,7 +264,7 @@ namespace cloudcv
         virtual AlgorithmInfoPtr info() = 0;
         virtual void process(
             const std::map<std::string, ParameterBindingPtr>& inArgs,
-            const std::map<std::string, ParameterBindingPtr>& outArgs,
+            const std::map<std::string, ParameterBindingPtr>& outArgs
             ) = 0;
 
 
@@ -273,15 +273,17 @@ namespace cloudcv
         static inline  const T& getInput(const std::map<std::string, ParameterBindingPtr>& inputArgs, 
                                          const std::string& name)
         {
-            auto it = inputArgs->find(name);
+            auto it = inputArgs.find(name);
 
             if (inputArgs.end() == it) {
                 // TODO: Check for null
             }
 
+            auto binding = it->second;
+
             auto * bind = dynamic_cast<const TypedBinding<T>*>(it->second.get());
             if (bind == nullptr)
-                throw ArgumentTypeMismatchException(inputArgs[index]->name(), inputArgs[index]->type(), TypedBinding<T>::static_name());
+                throw ArgumentTypeMismatchException(binding->name(), binding->type(), TypedBinding<T>::static_name());
 
             return bind->get();
         }
@@ -290,15 +292,17 @@ namespace cloudcv
         static inline  T& getOutput(const std::map<std::string, ParameterBindingPtr>& outputArgs, 
                                     const std::string& name)
         {
-            auto it = outputArgs->find(name);
+            auto it = outputArgs.find(name);
 
-            if (inputArgs.end() == it) {
+            if (outputArgs.end() == it) {
                 // TODO: Check for null
             }
 
+            auto binding = it->second;
+
             auto * bind = dynamic_cast<TypedBinding<T>*>(it->second.get());
             if (bind == nullptr)
-                throw ArgumentTypeMismatchException(outputArgs[index]->name(), outputArgs[index]->type(), TypedBinding<T>::static_name());
+                throw ArgumentTypeMismatchException(binding->name(), binding->type(), TypedBinding<T>::static_name());
 
             return bind->get();
         }

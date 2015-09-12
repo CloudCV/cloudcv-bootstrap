@@ -10,7 +10,7 @@ namespace cloudcv
 {
     class AlgorithmTask : public Job
     {
-        AlgorithmPtr                     m_algorithm;
+        AlgorithmPtr                               m_algorithm;
         std::map<std::string, ParameterBindingPtr> m_input;
         std::map<std::string, ParameterBindingPtr> m_output;
 
@@ -26,9 +26,9 @@ namespace cloudcv
             , m_input(inArgs)
             , m_output(outArgs)
         {
-            TRACE_FUNCTION(alg->name());
-            LOG_MESSAGE("Input arguments:" << inArgs.size());
-            LOG_MESSAGE("Output arguments:" << outArgs.size());
+            LOG_TRACE_MESSAGE(alg->info()->name());
+            LOG_TRACE_MESSAGE("Input arguments:" << inArgs.size());
+            LOG_TRACE_MESSAGE("Output arguments:" << outArgs.size());
         }
 
     protected:
@@ -47,17 +47,17 @@ namespace cloudcv
             }
             catch (ArgumentException& err)
             {
-                LOG_MESSAGE("ArgumentException:" << err.what());
+                LOG_TRACE_MESSAGE("ArgumentException:" << err.what());
                 SetErrorMessage(err.what());
             }
             catch (cv::Exception& err)
             {
-                LOG_MESSAGE("cv::Exception:" << err.what());
+                LOG_TRACE_MESSAGE("cv::Exception:" << err.what());
                 SetErrorMessage(err.what());
             }
             catch (std::runtime_error& err)
             {
-                LOG_MESSAGE("std::runtime_error:" << err.what());
+                LOG_TRACE_MESSAGE("std::runtime_error:" << err.what());
                 SetErrorMessage(err.what());
             }
         }
@@ -124,7 +124,7 @@ namespace cloudcv
         }
         else if (!error.empty())
         {
-            LOG_MESSAGE("Cannot parse input arguments: " << error.c_str());
+            LOG_TRACE_MESSAGE("Cannot parse input arguments: " << error.c_str());
             NanThrowTypeError(error.c_str());
         }
 
