@@ -26,6 +26,7 @@ namespace cloudcv
             , m_input(inArgs)
             , m_output(outArgs)
         {
+            TRACE_FUNCTION;
             LOG_TRACE_MESSAGE(alg->info()->name());
             LOG_TRACE_MESSAGE("Input arguments:" << inArgs.size());
             LOG_TRACE_MESSAGE("Output arguments:" << outArgs.size());
@@ -40,9 +41,9 @@ namespace cloudcv
         // convert them to PODs or some other fancy method.
         void ExecuteNativeCode() override
         {
-            TRACE_FUNCTION;
             try
             {
+                TRACE_FUNCTION;
                 m_algorithm->process(m_input, m_output);
             }
             catch (ArgumentException& err)
@@ -66,6 +67,7 @@ namespace cloudcv
         // safe to use V8 functions again. Don't forget the HandleScope!
         v8::Local<v8::Value> CreateCallbackResult() override
         {
+            TRACE_FUNCTION;
             using namespace v8;
 
             Nan::EscapableHandleScope scope;
@@ -83,6 +85,7 @@ namespace cloudcv
 
     void ProcessAlgorithm(AlgorithmPtr algorithm, Nan::NAN_METHOD_ARGS_TYPE args)
     {
+        TRACE_FUNCTION;
         using namespace v8;
         using namespace cloudcv;
 
@@ -100,13 +103,15 @@ namespace cloudcv
             .Argument(1).IsFunction().Bind(resultsCallback))
         {
             auto info = algorithm->info();
-
             std::map<std::string,ParameterBindingPtr> inArgs, outArgs;
 
             for (size_t inArgIdx = 0; inArgIdx < info->inputArguments(); inArgIdx++)
             {
                 auto arg = info->getInputArgumentType(inArgIdx);
                 Local<Value> argumentValue = inputArguments->Get(marshal(arg->name()));
+
+                LOG_TRACE_MESSAGE("Binding input argument " << arg->name());
+
                 auto bind = InputParameter::Bind(arg, argumentValue);
                 inArgs.insert(std::make_pair(arg->name(), bind));
             }
@@ -114,7 +119,9 @@ namespace cloudcv
             for (size_t outArgIdx = 0; outArgIdx < info->outputArguments(); outArgIdx++)
             {
                 auto arg = info->getOutputArgumentType(outArgIdx);
-                auto bind = OutputParameter::Create(arg);
+                LOG_TRACE_MESSAGE("Binding output argument " << arg->name());
+
+                auto bind = arg->createDefault();
                 outArgs.insert(std::make_pair(arg->name(), bind));
             }
 
@@ -133,7 +140,7 @@ namespace cloudcv
     class InputParameterBinder : public AlgorithmParamVisitor
     {
     private:
-        v8::Local<v8::Value>              m_value;
+        const v8::Local<v8::Value>&       m_value;
         std::shared_ptr<ParameterBinding> m_bind;
 
     protected:
@@ -154,7 +161,8 @@ namespace cloudcv
         }
 
     public:
-        InputParameterBinder(v8::Local<v8::Value> value)
+        InputParameterBinder(const v8::Local<v8::Value>& value)
+            : m_value(value)
         {
         }
 
@@ -195,16 +203,11 @@ namespace cloudcv
     };
 
 
-    std::shared_ptr<ParameterBinding> InputParameter::Bind(AlgorithmParamPtr key, v8::Local<v8::Value> value)
+    std::shared_ptr<ParameterBinding> InputParameter::Bind(AlgorithmParamPtr key, const v8::Local<v8::Value>& value)
     {
         InputParameterBinder visitor(value);
         key->visit(&visitor);
         return visitor.getBind();
-    }
-
-    std::shared_ptr<ParameterBinding> OutputParameter::Create(AlgorithmParamPtr key)
-    {
-        return key->createDefault();
     }
 
 }

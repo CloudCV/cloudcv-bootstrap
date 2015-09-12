@@ -35,7 +35,7 @@ namespace cloudcv
             template<typename InputArchive>
             static inline void load(InputArchive& ar, cv::String& val)
             {
-                NanAsciiString cStr(ar);
+                Nan::Utf8String cStr(ar);
                 val = cv::String(*cStr, cStr.length());
             }
 

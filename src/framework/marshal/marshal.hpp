@@ -243,7 +243,7 @@ namespace cloudcv
             template<typename OutputArchive>
             static inline void save(OutputArchive& ar, const std::map<K, V>& map_val)
             {
-                v8::Local<v8::Array> result = Nan::New<v8::Array>().ToLocalChecked();
+                v8::Local<v8::Array> result = Nan::New<v8::Array>();
                 for (typename std::map<K, V>::const_iterator i = map_val.begin(); i != map_val.end(); ++i)
                 {
                     result->Set(i, marshal(*i));

@@ -38,7 +38,7 @@ namespace cloudcv
             _input[2].reset(new TypedParameter<float>("theta", 1));
             _input[3].reset(new TypedParameter<int>("threshold"));
 
-            _output[0].reset(new TypedParameter< std::vector<cv::Point2f> >("lines"));
+            _output[0].reset(new OutputParameter< std::vector<cv::Point2f> >("lines"));
         }
 
         std::string name() const override
@@ -100,7 +100,8 @@ namespace cloudcv
             const std::map<std::string, ParameterBindingPtr>& inArgs,
             const std::map<std::string, ParameterBindingPtr>& outArgs
             ) override
-        {
+        {            
+            TRACE_FUNCTION;
             ImageSource source = getInput<ImageSource>(inArgs, "image");
             const float rho = getInput<float>(inArgs, "rho");
             const float theta = getInput<float>(inArgs, "theta");
@@ -109,6 +110,7 @@ namespace cloudcv
             std::vector<cv::Point2f>&lines = getOutput<std::vector<cv::Point2f> >(outArgs, "lines");
 
             cv::HoughLines(source.getImage(cv::IMREAD_GRAYSCALE), lines, rho, theta, threshold);
+            LOG_TRACE_MESSAGE("Detected " << lines.size() << " lines");
         }
 
         inline static AlgorithmPtr create()
@@ -119,6 +121,7 @@ namespace cloudcv
 
     NAN_METHOD(houghLines)
     {
+        TRACE_FUNCTION;
         ProcessAlgorithm(HoughLinesAlgorithm::create(), info);
     }
 }

@@ -12,6 +12,7 @@
 **********************************************************************************/
 #include <nan.h>
 
+#include "framework/Logger.hpp"
 #include "ImageSource.hpp"
 #include "Algorithm.hpp"
 #include "framework/marshal/marshal.hpp"
@@ -53,6 +54,7 @@ namespace cloudcv
         {            
             mImageData    = Buffer::Data(imageBuffer);
             mImageDataLen = Buffer::Length(imageBuffer);
+            LOG_TRACE_MESSAGE("[Buffer]" << mImageDataLen);        
         }
 
         virtual ~BufferImageSource()
@@ -86,6 +88,7 @@ namespace cloudcv
 
     ImageSource ImageSource::CreateImageSource(const std::string& filepath)
     {
+        LOG_TRACE_MESSAGE("ImageSource [File]:" << filepath);
         return ImageSource(std::shared_ptr<ImageSourceImpl>(new FileImageSource(filepath)));
     }
 
@@ -102,6 +105,7 @@ namespace cloudcv
 
     ImageSource ImageSource::CreateImageSource(v8::Local<v8::Object> imageBuffer)
     {
+        LOG_TRACE_MESSAGE("ImageSource [Buffer]");        
         return ImageSource(std::shared_ptr<ImageSourceImpl>(new BufferImageSource(imageBuffer)));
     }
 

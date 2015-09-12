@@ -117,6 +117,15 @@ namespace cloudcv
         std::function<T()> m_default;
     };
 
+    template<typename T>
+    class OutputParameter : public TypedParameter<T>
+    {
+    public:
+        OutputParameter(const char * name)
+            : TypedParameter<T>(name, T())
+        {
+        }
+    };
 
     class AlgorithmParamVisitor
     {
@@ -248,13 +257,7 @@ namespace cloudcv
         static std::shared_ptr<ParameterBinding> Bind(AlgorithmParamPtr key, cv::Mat value);
 
         // Untyped bind
-        static std::shared_ptr<ParameterBinding> Bind(AlgorithmParamPtr key, v8::Local<v8::Value> value);
-    };
-
-    class OutputParameter
-    {
-    public:
-        static std::shared_ptr<ParameterBinding> Create(AlgorithmParamPtr key);
+        static std::shared_ptr<ParameterBinding> Bind(AlgorithmParamPtr key, const v8::Local<v8::Value>& value);
     };
 
     class Algorithm
