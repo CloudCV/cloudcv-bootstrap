@@ -2,11 +2,12 @@
 
 #include <memory>
 #include <vector>
-#include <v8.h>
 #include <opencv2/opencv.hpp>
-#include <nan.h>
 #include <functional>
 #include <map>
+#include <node.h>
+#include <v8.h>
+#include <nan.h>
 
 #include "framework/ImageSource.hpp"
 #include "framework/marshal/marshal.hpp"
@@ -54,7 +55,7 @@ namespace cloudcv
 
         virtual bool visit(AlgorithmParamVisitor * visitor) = 0;
 
-        virtual ~AlgorithmParam() = default;
+        virtual ~AlgorithmParam() {};
         virtual std::string name() const = 0;
         virtual std::string type() const = 0;
 
@@ -68,14 +69,14 @@ namespace cloudcv
     class TypedParameter : public AlgorithmParam
     {
     public:
-        TypedParameter(const char * name)
+        inline TypedParameter(const char * name)
             : m_name(name)
             , m_type(typeid(T).name())
             , m_hasDefaultValue(false)
         {
         }
 
-        TypedParameter(const char * name, T defaultValue)
+        inline TypedParameter(const char * name, T defaultValue)
             : m_name(name)
             , m_type(typeid(T).name())
             , m_hasDefaultValue(true)
@@ -83,7 +84,7 @@ namespace cloudcv
             m_default = [defaultValue]() { return defaultValue; };
         }
 
-        TypedParameter(const char * name, std::function<T()> defaultValue)
+        inline TypedParameter(const char * name, std::function<T()> defaultValue)
             : m_name(name)
             , m_type(typeid(T).name())
             , m_hasDefaultValue(true)
@@ -91,17 +92,17 @@ namespace cloudcv
         {
         }
 
-        std::string name() const override
+        inline std::string name() const override
         {
             return m_name;
         }
 
-        std::string type() const override
+        inline std::string type() const override
         {
             return m_type;
         }
 
-        bool hasDefaultValue() const override
+        inline bool hasDefaultValue() const override
         {
             return m_hasDefaultValue;
         }
@@ -121,7 +122,7 @@ namespace cloudcv
     class OutputParameter : public TypedParameter<T>
     {
     public:
-        OutputParameter(const char * name)
+        inline OutputParameter(const char * name)
             : TypedParameter<T>(name, T())
         {
         }
@@ -187,21 +188,21 @@ namespace cloudcv
     class TypedBinding : public ParameterBinding
     {
     public:
-        TypedBinding(const std::string& name)
+        inline TypedBinding(const std::string& name)
             : m_name(name)
             , m_type(typeid(T).name())
             , m_value(nullptr)
         {
         }
 
-        TypedBinding(const std::string& name, const T& value)
+        inline TypedBinding(const std::string& name, const T& value)
             : m_name(name)
             , m_type(typeid(T).name())
             , m_value(const_cast<T*>(&value))
         {
         }
 
-        static std::string static_name() {
+        inline static std::string static_name() {
             return typeid(T).name();
         }
 
@@ -214,19 +215,19 @@ namespace cloudcv
         }
 
 
-        const T& get() const
+        inline const T& get() const
         {
             assert(m_value != nullptr);
             return *m_value;
         }
 
-        T& get()
+        inline T& get()
         {
             assert(m_value != nullptr);
             return *m_value;
         }
 
-        v8::Local<v8::Value> marshalFromNative() const override
+        inline v8::Local<v8::Value> marshalFromNative() const override
         {
             Nan::EscapableHandleScope scope;
             const T& val = get();
@@ -242,7 +243,7 @@ namespace cloudcv
     typedef std::shared_ptr<ParameterBinding> ParameterBindingPtr;
 
     template <typename T>
-    std::shared_ptr<ParameterBinding> TypedParameter<T>::createDefault()
+    inline std::shared_ptr<ParameterBinding> TypedParameter<T>::createDefault()
     {
         return std::shared_ptr<ParameterBinding>(new TypedBinding<T>(m_name, m_default()));
     }

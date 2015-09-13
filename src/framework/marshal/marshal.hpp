@@ -1,6 +1,5 @@
 #pragma once
 
-#include <nan.h>
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -8,6 +7,9 @@
 #include <complex>
 #include <array>
 #include <memory>
+#include <node.h>
+#include <v8.h>
+#include <nan.h>
 
 #include "framework/Logger.hpp"
 #include "framework/ImageSource.hpp"

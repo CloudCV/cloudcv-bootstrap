@@ -11,18 +11,22 @@
  * 
  **********************************************************************************/
 
-#include <nan.h>
-
 #include "cloudcv.hpp"
 
-using namespace v8;
-using namespace node;
 using namespace cloudcv;
-using namespace Nan;
+using v8::FunctionTemplate;
+using v8::Handle;
+using v8::Object;
+using v8::String;
+using Nan::GetFunction;
+using Nan::New;
+using Nan::Set;
 
 NAN_MODULE_INIT(RegisterModule)
 {
-    Set(target, New<String>("houghLines").ToLocalChecked(), GetFunction(New<FunctionTemplate>(houghLines)).ToLocalChecked());
+    Set(target, 
+        New<String>("houghLines").ToLocalChecked(), 
+        GetFunction(New<FunctionTemplate>(houghLines)).ToLocalChecked());
 }
 
 NODE_MODULE(cloudcv, RegisterModule);

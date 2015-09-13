@@ -1,9 +1,12 @@
 #include "framework/Algorithm.hpp"
 #include "framework/Logger.hpp"
 #include "framework/ScopedTimer.hpp"
-#include "framework/NanCheck.hpp"
 #include "framework/Job.hpp"
 #include "framework/marshal/marshal.hpp"
+#include "framework/NanCheck.hpp"
+
+#include <node.h>
+#include <v8.h>
 #include <nan.h>
 
 namespace cloudcv
@@ -68,11 +71,11 @@ namespace cloudcv
         v8::Local<v8::Value> CreateCallbackResult() override
         {
             TRACE_FUNCTION;
-            using namespace v8;
+            
 
             Nan::EscapableHandleScope scope;
 
-            Local<Object> outputArgument = Nan::New<Object>();
+            v8::Local<v8::Object> outputArgument = Nan::New<v8::Object>();
 
             for (const auto& arg : m_output)
             {
@@ -86,14 +89,14 @@ namespace cloudcv
     void ProcessAlgorithm(AlgorithmPtr algorithm, Nan::NAN_METHOD_ARGS_TYPE args)
     {
         TRACE_FUNCTION;
-        using namespace v8;
+        
         using namespace cloudcv;
 
         TRACE_FUNCTION;
         Nan::HandleScope scope;
 
-        Local<Object>   inputArguments;
-        Local<Function> resultsCallback;
+        v8::Local<v8::Object>   inputArguments;
+        v8::Local<v8::Function> resultsCallback;
         std::string     error;
 
         if (NanCheck(args)
@@ -108,7 +111,7 @@ namespace cloudcv
             for (size_t inArgIdx = 0; inArgIdx < info->inputArguments(); inArgIdx++)
             {
                 auto arg = info->getInputArgumentType(inArgIdx);
-                Local<Value> argumentValue = inputArguments->Get(marshal(arg->name()));
+                v8::Local<v8::Value> argumentValue = inputArguments->Get(marshal(arg->name()));
 
                 LOG_TRACE_MESSAGE("Binding input argument " << arg->name());
 
@@ -146,7 +149,7 @@ namespace cloudcv
     protected:
 
         template <typename T>
-        bool convert(TypedParameter<T>* parameter)
+        inline bool convert(TypedParameter<T>* parameter)
         {
             if (m_value->IsUndefined())
             {

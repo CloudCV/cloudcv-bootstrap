@@ -20,8 +20,8 @@
 
 #include <vector>
 
-using namespace v8;
-using namespace node;
+
+
 
 namespace cloudcv
 {
@@ -48,7 +48,7 @@ namespace cloudcv
 
         uint32_t inputArguments() const override
         {
-            return 1;
+            return 4;
         }
 
         uint32_t outputArguments() const override

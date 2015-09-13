@@ -13,6 +13,8 @@
 
 #pragma once
 
+#include <node.h>
+#include <v8.h>
 #include <nan.h>
 
 namespace cloudcv

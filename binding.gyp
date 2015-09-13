@@ -44,7 +44,7 @@
             ],
 
             'libraries': [
-                ">!(node -e \"require('native-opencv').libraries(false)\")"
+                ">!(node -e \"require('native-opencv').libraries(true)\")"
             ],
 
             'configurations': {
@@ -54,6 +54,9 @@
                             'RuntimeTypeInfo': 'true',
                             'ExceptionHandling': '2',  # /EHsc
                         },
+                        'VCLinkerTool': {
+                            'GenerateDebugInformation': 'true',
+                        }
                     },
                 },
                 'Release': {
@@ -62,6 +65,9 @@
                             'RuntimeTypeInfo': 'true',
                             'ExceptionHandling': '2',  # /EHsc
                         },
+                        'VCLinkerTool': {
+                            'GenerateDebugInformation': 'true',
+                        }
                     },
                 },
             },

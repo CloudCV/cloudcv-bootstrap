@@ -10,6 +10,8 @@
 *  - http://computer-vision-talks.com
 *
 **********************************************************************************/
+#include <node.h>
+#include <v8.h>
 #include <nan.h>
 
 #include "framework/Logger.hpp"
@@ -17,8 +19,8 @@
 #include "Algorithm.hpp"
 #include "framework/marshal/marshal.hpp"
 
-using namespace v8;
-using namespace node;
+
+
 
 namespace cloudcv
 {
@@ -49,11 +51,11 @@ namespace cloudcv
     class BufferImageSource : public ImageSource::ImageSourceImpl
     {
     public:
-        BufferImageSource(Local<Object> imageBuffer)
+        BufferImageSource(v8::Local<v8::Object> imageBuffer)
             : mImageBuffer(imageBuffer)
         {            
-            mImageData    = Buffer::Data(imageBuffer);
-            mImageDataLen = Buffer::Length(imageBuffer);
+            mImageData    = node::Buffer::Data(imageBuffer);
+            mImageDataLen = node::Buffer::Length(imageBuffer);
             LOG_TRACE_MESSAGE("[Buffer]" << mImageDataLen);        
         }
 
@@ -68,7 +70,7 @@ namespace cloudcv
         }
 
     private:
-        Nan::Persistent<Object>       mImageBuffer;
+        Nan::Persistent<v8::Object>       mImageBuffer;
         char                   * mImageData;
         size_t                   mImageDataLen;
     };
@@ -94,7 +96,7 @@ namespace cloudcv
 
     ImageSource ImageSource::CreateImageSource(v8::Local<v8::Value> bufferOrString)
     {
-        if (Buffer::HasInstance(bufferOrString))
+        if (node::Buffer::HasInstance(bufferOrString))
             return CreateImageSource(bufferOrString->ToObject());
 
         if (bufferOrString->IsString())
