@@ -22,9 +22,22 @@ using Nan::GetFunction;
 using Nan::New;
 using Nan::Set;
 
+NAN_METHOD(getAlgorithms)
+{
+    std::vector<std::string> algorithms = {
+        HoughLinesAlgorithm::name()
+    };
+
+    return marshal(algorithms);
+}
+
 NAN_MODULE_INIT(RegisterModule)
 {
-    Set(target, 
+    Set(target,
+        New<String>("getAlgorithms").ToLocalChecked(),
+        GetFunction(New<FunctionTemplate>(getAlgorithms)).ToLocalChecked());
+
+    Set(target,
         New<String>("houghLines").ToLocalChecked(), 
         GetFunction(New<FunctionTemplate>(houghLines)).ToLocalChecked());
 }

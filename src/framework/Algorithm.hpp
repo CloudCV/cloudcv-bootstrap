@@ -44,10 +44,12 @@ namespace cloudcv
         }
     };
 
-    
+
 
     class AlgorithmParamVisitor;
     class ParameterBinding;
+    class AlgorithmInfo;
+    typedef std::shared_ptr<AlgorithmInfo> AlgorithmInfoPtr;
 
     class AlgorithmParam
     {
@@ -62,29 +64,41 @@ namespace cloudcv
         virtual std::shared_ptr<ParameterBinding> createDefault() = 0;
         virtual bool hasDefaultValue() const = 0;
     };
-    
+    typedef std::shared_ptr<AlgorithmParam> AlgorithmParamPtr;
+
 
 
     template<typename T>
     class TypedParameter : public AlgorithmParam
     {
     public:
-        inline TypedParameter(const char * name)
+
+        static std::pair<std::string, AlgorithmParamPtr> Create(const char * name)
+        {
+            return std::make_pair( std::string(name), AlgorithmParamPtr(new TypedParameter<T>(name)) );
+        }
+
+        static std::pair<std::string, AlgorithmParamPtr> Create(const char * name, T defaultValue)
+        {
+            return std::make_pair(std::string(name), AlgorithmParamPtr(new TypedParameter<T>(name, defaultValue)));
+        }
+
+        TypedParameter(const char * name)
             : m_name(name)
             , m_type(typeid(T).name())
             , m_hasDefaultValue(false)
         {
         }
 
-        inline TypedParameter(const char * name, T defaultValue)
+        TypedParameter(const char * name, T defaultValue)
             : m_name(name)
             , m_type(typeid(T).name())
             , m_hasDefaultValue(true)
         {
-            m_default = [=]() { return defaultValue; };
+            m_default = [defaultValue]() { return defaultValue; };
         }
 
-        inline TypedParameter(const char * name, std::function<T()> defaultValue)
+        TypedParameter(const char * name, std::function<T()> defaultValue)
             : m_name(name)
             , m_type(typeid(T).name())
             , m_hasDefaultValue(true)
@@ -92,12 +106,12 @@ namespace cloudcv
         {
         }
 
-        inline std::string name() const override
+        std::string name() const override
         {
             return m_name;
         }
 
-        inline std::string type() const override
+        std::string type() const override
         {
             return m_type;
         }
@@ -125,7 +139,7 @@ namespace cloudcv
         inline OutputParameter(const char * name)
             : TypedParameter<T>(name, T())
         {
-        }
+            }
     };
 
     class AlgorithmParamVisitor
@@ -142,31 +156,33 @@ namespace cloudcv
     };
 
     template<typename T>
-    inline bool TypedParameter<T>::visit(AlgorithmParamVisitor * visitor) 
+    inline bool TypedParameter<T>::visit(AlgorithmParamVisitor * visitor)
     {
         return visitor->apply(this);
     }
 
-    typedef std::shared_ptr<AlgorithmParam> AlgorithmParamPtr;
 
     class AlgorithmInfo
     {
     public:
-        virtual std::string name() const = 0;
+        inline std::string name() const { return m_name; }
 
-        //virtual uint32_t constructorArguments() const = 0;
-        virtual uint32_t inputArguments() const = 0;
-        virtual uint32_t outputArguments() const = 0;
+        inline const std::map<std::string, AlgorithmParamPtr>& inputArguments() const { return m_inputParams; }
+        inline const std::map<std::string, AlgorithmParamPtr>& outputArguments() const { return m_inputParams; }
 
-        //virtual ArgumentTypePtr getConstructorArgumentType(uint32_t argumentIndex) const = 0;
-        virtual AlgorithmParamPtr getInputArgumentType(uint32_t argumentIndex) const = 0;
-        virtual AlgorithmParamPtr getOutputArgumentType(uint32_t argumentIndex) const = 0;
+    protected:
+        AlgorithmInfo(
+            const std::string& name,
+            std::initializer_list<std::pair<std::string, AlgorithmParamPtr>> in,
+            std::initializer_list<std::pair<std::string, AlgorithmParamPtr>> out);
 
-        virtual ~AlgorithmInfo() = default;
     private:
+        std::string                              m_name;
+        std::map<std::string, AlgorithmParamPtr> m_inputParams;
+        std::map<std::string, AlgorithmParamPtr> m_outputParams;
+
     };
 
-    typedef std::shared_ptr<AlgorithmInfo> AlgorithmInfoPtr;
 
     class ParameterBinding
     {
@@ -263,8 +279,8 @@ namespace cloudcv
 
     protected:
         template <typename T>
-        static inline  const T& getInput(const std::map<std::string, ParameterBindingPtr>& inputArgs, 
-                                         const std::string& name)
+        static inline  const T& getInput(const std::map<std::string, ParameterBindingPtr>& inputArgs,
+            const std::string& name)
         {
             auto it = inputArgs.find(name);
 
@@ -283,8 +299,8 @@ namespace cloudcv
         }
 
         template <typename T>
-        static inline  T& getOutput(const std::map<std::string, ParameterBindingPtr>& outputArgs, 
-                                    const std::string& name)
+        static inline  T& getOutput(const std::map<std::string, ParameterBindingPtr>& outputArgs,
+            const std::string& name)
         {
             auto it = outputArgs.find(name);
 

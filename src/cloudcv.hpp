@@ -19,5 +19,6 @@
 
 namespace cloudcv
 {
+    NAN_METHOD(getAlgorithms);
     NAN_METHOD(houghLines);
 }

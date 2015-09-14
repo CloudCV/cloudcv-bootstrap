@@ -22,45 +22,30 @@
 
 namespace cloudcv
 {
+    static const char * InArgImage = "image";
+    static const char * InArgRho = "rho";
+    static const char * InArgTheta = "theta";
+    static const char * InArgThreshold = "theta";
+    static const char * OutArgLines = "lines";
+
     class HoughLinesAlgorithmInfo : public AlgorithmInfo
     {
-        AlgorithmParamPtr _input[4];
-        AlgorithmParamPtr _output[1];
-
     public:
+
         HoughLinesAlgorithmInfo()
+            : AlgorithmInfo("houghLines",
+            {
+                { TypedParameter<ImageSource>::Create(InArgImage) },
+                { TypedParameter<float>::Create(InArgRho, 2) },
+                { TypedParameter<float>::Create(InArgTheta, 2) },
+                { TypedParameter<int>::Create(InArgThreshold, 5) }
+        },
         {
-            _input[0].reset(new TypedParameter<ImageSource>("image"));
-            _input[1].reset(new TypedParameter<float>("rho", 2));
-            _input[2].reset(new TypedParameter<float>("theta", 2));
-            _input[3].reset(new TypedParameter<int>("threshold", 5));
-
-            _output[0].reset(new OutputParameter< std::vector<cv::Point2f> >("lines"));
+            { OutputParameter< std::vector<cv::Point2f> >::Create(OutArgLines) }
         }
+            )
+            {
 
-        std::string name() const override
-        {
-            return "analyzeImage";
-        }
-
-        uint32_t inputArguments() const override
-        {
-            return 4;
-        }
-
-        uint32_t outputArguments() const override
-        {
-            return 1;
-        }
-
-        AlgorithmParamPtr getInputArgumentType(uint32_t argumentIndex) const override
-        {
-            return _input[argumentIndex];
-        }
-
-        AlgorithmParamPtr getOutputArgumentType(uint32_t argumentIndex) const override
-        {
-            return _output[argumentIndex];
         }
     };
 
@@ -68,8 +53,6 @@ namespace cloudcv
     {
     protected:
     public:
-
-
         AlgorithmInfoPtr info() override
         {
             static std::shared_ptr<AlgorithmInfo> _info;
@@ -83,15 +66,15 @@ namespace cloudcv
             const std::map<std::string, ParameterBindingPtr>& inArgs,
             const std::map<std::string, ParameterBindingPtr>& outArgs
             ) override
-        {            
+        {
             TRACE_FUNCTION;
-            ImageSource source = getInput<ImageSource>(inArgs, "image");
-            const float rho = getInput<float>(inArgs, "rho");
-            const float theta = getInput<float>(inArgs, "theta");
-            const int threshold = getInput<int>(inArgs, "threshold");
+            ImageSource source = getInput<ImageSource>(inArgs, InArgImage);
+            const float rho = getInput<float>(inArgs, InArgRho);
+            const float theta = getInput<float>(inArgs, InArgTheta);
+            const int threshold = getInput<int>(inArgs, InArgThreshold);
             cv::Mat inputImage = source.getImage(cv::IMREAD_GRAYSCALE);
 
-            std::vector<cv::Point2f>&lines = getOutput<std::vector<cv::Point2f> >(outArgs, "lines");
+            std::vector<cv::Point2f>&lines = getOutput<std::vector<cv::Point2f> >(outArgs, OutArgLines);
 
             cv::HoughLines(inputImage, lines, rho, theta, threshold);
             LOG_TRACE_MESSAGE("Detected " << lines.size() << " lines");

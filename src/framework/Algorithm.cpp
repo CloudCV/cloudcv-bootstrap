@@ -11,6 +11,27 @@
 
 namespace cloudcv
 {
+
+
+    AlgorithmInfo::AlgorithmInfo(
+        const std::string& name,
+        std::initializer_list<std::pair<std::string, AlgorithmParamPtr>> in,
+        std::initializer_list<std::pair<std::string, AlgorithmParamPtr>> out)
+        : m_name(name)
+
+    {
+        for (auto i : in)
+        {
+            m_inputParams.insert(i);
+        }
+
+        for (auto o : out)
+        {
+            m_outputParams.insert(o);
+        }
+
+    }
+
     class AlgorithmTask : public Job
     {
         AlgorithmPtr                               m_algorithm;
@@ -108,28 +129,26 @@ namespace cloudcv
             auto info = algorithm->info();
             std::map<std::string,ParameterBindingPtr> inArgs, outArgs;
 
-            for (size_t inArgIdx = 0; inArgIdx < info->inputArguments(); inArgIdx++)
+            for (auto arg: info->inputArguments())
             {
-                auto arg = info->getInputArgumentType(inArgIdx);
-                auto propertyName = marshal(arg->name());
+                auto propertyName = marshal(arg.first);
                 v8::Local<v8::Value> argumentValue = Nan::Null();
 
                 if (inputArguments->HasRealNamedProperty(propertyName->ToString()))
                     argumentValue = inputArguments->Get(propertyName);
                 
-                LOG_TRACE_MESSAGE("Binding input argument " << arg->name());
+                LOG_TRACE_MESSAGE("Binding input argument " << arg.first);
 
-                auto bind = InputParameter::Bind(arg, argumentValue);
-                inArgs.insert(std::make_pair(arg->name(), bind));
+                auto bind = InputParameter::Bind(arg.second, argumentValue);
+                inArgs.insert(std::make_pair(arg.first, bind));
             }
 
-            for (size_t outArgIdx = 0; outArgIdx < info->outputArguments(); outArgIdx++)
+            for (auto arg : info->inputArguments())
             {
-                auto arg = info->getOutputArgumentType(outArgIdx);
-                LOG_TRACE_MESSAGE("Binding output argument " << arg->name());
+                LOG_TRACE_MESSAGE("Binding output argument " << arg.first);
 
-                auto bind = arg->createDefault();
-                outArgs.insert(std::make_pair(arg->name(), bind));
+                auto bind = arg.second->createDefault();
+                outArgs.insert(std::make_pair(arg.first, bind));
             }
 
             Nan::Callback *callback = new Nan::Callback(resultsCallback);
