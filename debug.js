@@ -1,4 +1,4 @@
-var DEBUG_ADDON = "./build/Debug/cloudcv";
+var DEBUG_ADDON = __dirname + "/build/Debug/cloudcv.node";
 
 var cloudcv = require(DEBUG_ADDON);
 
