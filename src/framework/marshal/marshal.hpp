@@ -514,19 +514,46 @@ namespace cloudcv
         };
 
         template<>
-        inline void LoadArchive::load(bool& val) { val = _src->BooleanValue(); }
+        inline void LoadArchive::load(bool& val)
+        {
+            if (!_src->IsBoolean())
+                throw MarshalTypeMismatchException("Argument is not a boolean");
+
+            val = _src->BooleanValue(); 
+        }
 
         template<>
-        inline void LoadArchive::load(int& val) { val = _src->Int32Value(); }
+        inline void LoadArchive::load(int& val)        
+        {
+            if (!_src->IsInt32())
+                throw MarshalTypeMismatchException("Argument is not a number");
+
+            val = _src->Int32Value();
+        }
 
         template<>
-        inline void LoadArchive::load(float& val) { val = (float)_src->NumberValue(); }
+        inline void LoadArchive::load(float& val)
+        {            
+            if (!_src->IsNumber()) 
+                throw MarshalTypeMismatchException("Argument is not a number");
+              
+            val = (float)_src->NumberValue(); 
+        }
 
         template<>
-        inline void LoadArchive::load(double& val) { val = (double)_src->NumberValue(); }
+        inline void LoadArchive::load(double& val)
+        {
+            if (!_src->IsNumber())
+                throw MarshalTypeMismatchException("Argument is not a number");
+
+            val = (double)_src->NumberValue();
+        }
 
         template<>
-        inline void LoadArchive::load(uint32_t& val) { val = (uint32_t)_src->Uint32Value(); }
+        inline void LoadArchive::load(uint32_t& val)
+        { 
+            val = (uint32_t)_src->Uint32Value(); 
+        }
 
     } // namespace marshal
 
@@ -552,7 +579,6 @@ namespace cloudcv
 
         return scope.Escape(oa._dst);
     }
-
 
 }
 

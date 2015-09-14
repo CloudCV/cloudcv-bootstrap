@@ -81,7 +81,7 @@ namespace cloudcv
             , m_type(typeid(T).name())
             , m_hasDefaultValue(true)
         {
-            m_default = [defaultValue]() { return defaultValue; };
+            m_default = [=]() { return defaultValue; };
         }
 
         inline TypedParameter(const char * name, std::function<T()> defaultValue)
@@ -179,27 +179,18 @@ namespace cloudcv
         virtual v8::Local<v8::Value> marshalFromNative() const = 0;
     };
 
-    struct no_deleter {
-        template<typename T>
-        inline void operator()(T * v) {}
-    };
 
     template<typename T>
     class TypedBinding : public ParameterBinding
     {
     public:
-        inline TypedBinding(const std::string& name)
-            : m_name(name)
-            , m_type(typeid(T).name())
-            , m_value(nullptr)
-        {
-        }
 
-        inline TypedBinding(const std::string& name, const T& value)
+        inline TypedBinding(const std::string& name, T value)
             : m_name(name)
             , m_type(typeid(T).name())
-            , m_value(const_cast<T*>(&value))
+            , m_value(value)
         {
+            LOG_TRACE_MESSAGE("Created binding to parameter " + name);
         }
 
         inline static std::string static_name() {
@@ -217,14 +208,12 @@ namespace cloudcv
 
         inline const T& get() const
         {
-            assert(m_value != nullptr);
-            return *m_value;
+            return m_value;
         }
 
         inline T& get()
         {
-            assert(m_value != nullptr);
-            return *m_value;
+            return m_value;
         }
 
         inline v8::Local<v8::Value> marshalFromNative() const override
@@ -237,7 +226,7 @@ namespace cloudcv
     private:
         std::string        m_name;
         std::string        m_type;
-        T*                 m_value;
+        T                  m_value;
     };
 
     typedef std::shared_ptr<ParameterBinding> ParameterBindingPtr;
@@ -280,6 +269,7 @@ namespace cloudcv
             auto it = inputArgs.find(name);
 
             if (inputArgs.end() == it) {
+                throw ArgumentException("Cannot find parameter " + name);
                 // TODO: Check for null
             }
 

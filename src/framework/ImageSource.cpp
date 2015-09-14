@@ -64,7 +64,7 @@ namespace cloudcv
             mImageBuffer.Reset();
         }
 
-        cv::Mat getImage(int flags)
+        cv::Mat getImage(int flags) override
         {
             return cv::imdecode(cv::_InputArray(mImageData, mImageDataLen), flags);
         }
@@ -75,6 +75,11 @@ namespace cloudcv
         size_t                   mImageDataLen;
     };
 
+    ImageSource::ImageSource()
+    {
+
+    }
+
     ImageSource::ImageSource(std::shared_ptr<ImageSourceImpl> impl)
         : m_impl(impl)
     {
@@ -82,8 +87,10 @@ namespace cloudcv
 
     cv::Mat ImageSource::getImage(int flags /* = cv::IMREAD_COLOR */)
     {
-        if (m_impl)
-            m_impl->getImage(flags);
+        if (m_impl.get() != nullptr)
+        {
+            return m_impl->getImage(flags);
+        }
 
         throw std::runtime_error("Image is empty");
     }

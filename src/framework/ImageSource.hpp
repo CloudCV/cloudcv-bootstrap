@@ -58,7 +58,7 @@ namespace cloudcv
 
         class ImageSourceImpl;
 
-        ImageSource() = default;
+        ImageSource();
 
     protected:
         ImageSource(std::shared_ptr<ImageSourceImpl> impl);

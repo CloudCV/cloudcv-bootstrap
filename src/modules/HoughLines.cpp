@@ -20,9 +20,6 @@
 
 #include <vector>
 
-
-
-
 namespace cloudcv
 {
     class HoughLinesAlgorithmInfo : public AlgorithmInfo
@@ -34,9 +31,9 @@ namespace cloudcv
         HoughLinesAlgorithmInfo()
         {
             _input[0].reset(new TypedParameter<ImageSource>("image"));
-            _input[1].reset(new TypedParameter<float>("rho", 1));
-            _input[2].reset(new TypedParameter<float>("theta", 1));
-            _input[3].reset(new TypedParameter<int>("threshold"));
+            _input[1].reset(new TypedParameter<float>("rho", 2));
+            _input[2].reset(new TypedParameter<float>("theta", 2));
+            _input[3].reset(new TypedParameter<int>("threshold", 5));
 
             _output[0].reset(new OutputParameter< std::vector<cv::Point2f> >("lines"));
         }
@@ -58,26 +55,12 @@ namespace cloudcv
 
         AlgorithmParamPtr getInputArgumentType(uint32_t argumentIndex) const override
         {
-            switch (argumentIndex)
-            {
-            case 0:
-                return _input[0];
-
-            default:
-                throw std::runtime_error("Invalid argument index");
-            }
+            return _input[argumentIndex];
         }
 
         AlgorithmParamPtr getOutputArgumentType(uint32_t argumentIndex) const override
         {
-            switch (argumentIndex)
-            {
-            case 0:
-                return _output[0];
-
-            default:
-                throw std::runtime_error("Invalid argument index");
-            }
+            return _output[argumentIndex];
         }
     };
 
@@ -106,10 +89,11 @@ namespace cloudcv
             const float rho = getInput<float>(inArgs, "rho");
             const float theta = getInput<float>(inArgs, "theta");
             const int threshold = getInput<int>(inArgs, "threshold");
+            cv::Mat inputImage = source.getImage(cv::IMREAD_GRAYSCALE);
 
             std::vector<cv::Point2f>&lines = getOutput<std::vector<cv::Point2f> >(outArgs, "lines");
 
-            cv::HoughLines(source.getImage(cv::IMREAD_GRAYSCALE), lines, rho, theta, threshold);
+            cv::HoughLines(inputImage, lines, rho, theta, threshold);
             LOG_TRACE_MESSAGE("Detected " << lines.size() << " lines");
         }
 

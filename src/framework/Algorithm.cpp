@@ -111,8 +111,12 @@ namespace cloudcv
             for (size_t inArgIdx = 0; inArgIdx < info->inputArguments(); inArgIdx++)
             {
                 auto arg = info->getInputArgumentType(inArgIdx);
-                v8::Local<v8::Value> argumentValue = inputArguments->Get(marshal(arg->name()));
+                auto propertyName = marshal(arg->name());
+                v8::Local<v8::Value> argumentValue = Nan::Null();
 
+                if (inputArguments->HasRealNamedProperty(propertyName->ToString()))
+                    argumentValue = inputArguments->Get(propertyName);
+                
                 LOG_TRACE_MESSAGE("Binding input argument " << arg->name());
 
                 auto bind = InputParameter::Bind(arg, argumentValue);
@@ -151,15 +155,18 @@ namespace cloudcv
         template <typename T>
         inline bool convert(TypedParameter<T>* parameter)
         {
-            if (m_value->IsUndefined())
+            if (m_value->IsUndefined() || m_value->IsNull())
             {
                 if (parameter->hasDefaultValue())
                     m_bind = parameter->createDefault();
                 else
                     throw MissingInputArgumentException(parameter->name());
             }
+            else
+            {
+                m_bind.reset(new TypedBinding<T>(parameter->name(), marshal<T>(m_value)));
+            }
 
-            m_bind.reset(new TypedBinding<T>(parameter->name(), marshal<T>(m_value)));
             return true;
         }
 
@@ -209,8 +216,12 @@ namespace cloudcv
     std::shared_ptr<ParameterBinding> InputParameter::Bind(AlgorithmParamPtr key, const v8::Local<v8::Value>& value)
     {
         InputParameterBinder visitor(value);
-        key->visit(&visitor);
-        return visitor.getBind();
+        if (key->visit(&visitor))
+        {
+            return visitor.getBind();
+        }
+
+        throw std::runtime_error("Cannot detect type of input parameter " + key->name());
     }
 
 }
