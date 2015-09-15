@@ -11,13 +11,10 @@
  * 
  **********************************************************************************/
 
-#include "cloudcv.hpp"
+#include "framework/marshal/marshal.hpp"
+#include "modules/HoughLines.hpp"
 
 using namespace cloudcv;
-using v8::FunctionTemplate;
-using v8::Handle;
-using v8::Object;
-using v8::String;
 using Nan::GetFunction;
 using Nan::New;
 using Nan::Set;
@@ -28,18 +25,18 @@ NAN_METHOD(getAlgorithms)
         HoughLinesAlgorithm::name()
     };
 
-    return marshal(algorithms);
+    info.GetReturnValue().Set(marshal(algorithms));
 }
 
 NAN_MODULE_INIT(RegisterModule)
 {
     Set(target,
-        New<String>("getAlgorithms").ToLocalChecked(),
-        GetFunction(New<FunctionTemplate>(getAlgorithms)).ToLocalChecked());
+        New<v8::String>("getAlgorithms").ToLocalChecked(),
+        GetFunction(New<v8::FunctionTemplate>(getAlgorithms)).ToLocalChecked());
 
     Set(target,
-        New<String>("houghLines").ToLocalChecked(), 
-        GetFunction(New<FunctionTemplate>(houghLines)).ToLocalChecked());
+        New<v8::String>("houghLines").ToLocalChecked(),
+        GetFunction(New<v8::FunctionTemplate>(houghLines)).ToLocalChecked());
 }
 
 NODE_MODULE(cloudcv, RegisterModule);

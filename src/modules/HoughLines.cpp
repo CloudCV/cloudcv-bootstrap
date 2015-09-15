@@ -17,7 +17,7 @@
 #include "framework/ImageSource.hpp"
 #include "framework/Logger.hpp"
 #include "framework/Algorithm.hpp"
-
+#include "modules/HoughLines.hpp"
 #include <vector>
 
 namespace cloudcv
@@ -25,15 +25,21 @@ namespace cloudcv
     static const char * InArgImage = "image";
     static const char * InArgRho = "rho";
     static const char * InArgTheta = "theta";
-    static const char * InArgThreshold = "theta";
+    static const char * InArgThreshold = "threshold";
+
     static const char * OutArgLines = "lines";
 
     class HoughLinesAlgorithmInfo : public AlgorithmInfo
     {
     public:
 
+        static inline std::string name()
+        {
+            return "houghLines";
+        }
+
         HoughLinesAlgorithmInfo()
-            : AlgorithmInfo("houghLines",
+            : AlgorithmInfo(name(),
             {
                 { TypedParameter<ImageSource>::Create(InArgImage) },
                 { TypedParameter<float>::Create(InArgRho, 2) },
@@ -45,50 +51,49 @@ namespace cloudcv
         }
             )
             {
-
         }
     };
 
-    class HoughLinesAlgorithm : public Algorithm
+    std::string HoughLinesAlgorithm::name()
     {
-    protected:
-    public:
-        AlgorithmInfoPtr info() override
-        {
-            static std::shared_ptr<AlgorithmInfo> _info;
-            if (!_info)
-                _info.reset(new HoughLinesAlgorithmInfo);
+        return HoughLinesAlgorithmInfo::name();
+    }
 
-            return _info;
-        }
+    AlgorithmInfoPtr HoughLinesAlgorithm::info()
+    {
+        static std::shared_ptr<AlgorithmInfo> _info;
+        if (!_info)
+            _info.reset(new HoughLinesAlgorithmInfo);
 
-        void process(
-            const std::map<std::string, ParameterBindingPtr>& inArgs,
-            const std::map<std::string, ParameterBindingPtr>& outArgs
-            ) override
-        {
-            TRACE_FUNCTION;
-            ImageSource source = getInput<ImageSource>(inArgs, InArgImage);
-            const float rho = getInput<float>(inArgs, InArgRho);
-            const float theta = getInput<float>(inArgs, InArgTheta);
-            const int threshold = getInput<int>(inArgs, InArgThreshold);
-            cv::Mat inputImage = source.getImage(cv::IMREAD_GRAYSCALE);
+        return _info;
+    }
 
-            std::vector<cv::Point2f>&lines = getOutput<std::vector<cv::Point2f> >(outArgs, OutArgLines);
-
-            cv::HoughLines(inputImage, lines, rho, theta, threshold);
-            LOG_TRACE_MESSAGE("Detected " << lines.size() << " lines");
-        }
-
-        inline static AlgorithmPtr create()
-        {
-            return AlgorithmPtr(new HoughLinesAlgorithm());
-        }
-    };
-
-    NAN_METHOD(houghLines)
+    void HoughLinesAlgorithm::process(
+        const std::map<std::string, ParameterBindingPtr>& inArgs,
+        const std::map<std::string, ParameterBindingPtr>& outArgs
+        )
     {
         TRACE_FUNCTION;
-        ProcessAlgorithm(HoughLinesAlgorithm::create(), info);
+        ImageSource source = getInput<ImageSource>(inArgs, InArgImage);
+        const float rho = getInput<float>(inArgs, InArgRho);
+        const float theta = getInput<float>(inArgs, InArgTheta);
+        const int threshold = getInput<int>(inArgs, InArgThreshold);
+        cv::Mat inputImage = source.getImage(cv::IMREAD_GRAYSCALE);
+
+        std::vector<cv::Point2f>&lines = getOutput<std::vector<cv::Point2f> >(outArgs, OutArgLines);
+
+        cv::HoughLines(inputImage, lines, rho, theta, threshold);
+        LOG_TRACE_MESSAGE("Detected " << lines.size() << " lines");
     }
+
+    AlgorithmPtr HoughLinesAlgorithm::create()
+    {
+        return AlgorithmPtr(new HoughLinesAlgorithm());
+    }
+}
+
+NAN_METHOD(houghLines)
+{
+    TRACE_FUNCTION;
+    ProcessAlgorithm(cloudcv::HoughLinesAlgorithm::create(), info);
 }

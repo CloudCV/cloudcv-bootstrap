@@ -22,12 +22,16 @@ namespace cloudcv
     {
         for (auto i : in)
         {
-            m_inputParams.insert(i);
+            auto res = m_inputParams.insert(i);
+            if (!res.second)
+                throw ArgumentException("Duplicate argument name " + i.first);
         }
 
         for (auto o : out)
         {
-            m_outputParams.insert(o);
+            auto res = m_outputParams.insert(o);
+            if (!res.second)
+                throw ArgumentException("Duplicate argument name " + o.first);
         }
 
     }
@@ -126,33 +130,46 @@ namespace cloudcv
             .Argument(0).IsObject().Bind(inputArguments)
             .Argument(1).IsFunction().Bind(resultsCallback))
         {
-            auto info = algorithm->info();
-            std::map<std::string,ParameterBindingPtr> inArgs, outArgs;
-
-            for (auto arg: info->inputArguments())
+            try
             {
-                auto propertyName = marshal(arg.first);
-                v8::Local<v8::Value> argumentValue = Nan::Null();
+                auto info = algorithm->info();
+                std::map<std::string, ParameterBindingPtr> inArgs, outArgs;
 
-                if (inputArguments->HasRealNamedProperty(propertyName->ToString()))
-                    argumentValue = inputArguments->Get(propertyName);
-                
-                LOG_TRACE_MESSAGE("Binding input argument " << arg.first);
+                for (auto arg : info->inputArguments())
+                {
+                    auto propertyName = marshal(arg.first);
+                    v8::Local<v8::Value> argumentValue = Nan::Null();
 
-                auto bind = InputParameter::Bind(arg.second, argumentValue);
-                inArgs.insert(std::make_pair(arg.first, bind));
+                    if (inputArguments->HasRealNamedProperty(propertyName->ToString()))
+                        argumentValue = inputArguments->Get(propertyName);
+
+                    LOG_TRACE_MESSAGE("Binding input argument " << arg.first);
+
+                    auto bind = InputParameter::Bind(arg.second, argumentValue);
+                    inArgs.insert(std::make_pair(arg.first, bind));
+                }
+
+                for (auto arg : info->outputArguments())
+                {
+                    LOG_TRACE_MESSAGE("Binding output argument " << arg.first);
+
+                    auto bind = arg.second->createDefault();
+                    outArgs.insert(std::make_pair(arg.first, bind));
+                }
+
+                Nan::Callback *callback = new Nan::Callback(resultsCallback);
+                Nan::AsyncQueueWorker(new AlgorithmTask(algorithm, inArgs, outArgs, callback));
             }
-
-            for (auto arg : info->inputArguments())
+            catch (cv::Exception& er)
             {
-                LOG_TRACE_MESSAGE("Binding output argument " << arg.first);
-
-                auto bind = arg.second->createDefault();
-                outArgs.insert(std::make_pair(arg.first, bind));
+                LOG_TRACE_MESSAGE(er.what());
+                Nan::ThrowError(er.what());
             }
-
-            Nan::Callback *callback = new Nan::Callback(resultsCallback);
-            Nan::AsyncQueueWorker(new AlgorithmTask(algorithm, inArgs, outArgs, callback));
+            catch (std::runtime_error& er)
+            {
+                LOG_TRACE_MESSAGE(er.what());
+                Nan::ThrowError(er.what());
+            }
 
         }
         else if (!error.empty())

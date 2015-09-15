@@ -18,9 +18,10 @@ namespace cloudcv
     class ArgumentException : public std::runtime_error
     {
     public:
-        inline ArgumentException(std::string message) : std::runtime_error(message)
+        
+        inline ArgumentException(const std::string& message) : std::runtime_error(message)
         {
-
+            int d = 0;
         }
     };
 
@@ -75,7 +76,7 @@ namespace cloudcv
 
         static std::pair<std::string, AlgorithmParamPtr> Create(const char * name)
         {
-            return std::make_pair( std::string(name), AlgorithmParamPtr(new TypedParameter<T>(name)) );
+            return std::make_pair( std::string(name), AlgorithmParamPtr(new TypedParameter<T>(name, T())) );
         }
 
         static std::pair<std::string, AlgorithmParamPtr> Create(const char * name, T defaultValue)
@@ -168,7 +169,7 @@ namespace cloudcv
         inline std::string name() const { return m_name; }
 
         inline const std::map<std::string, AlgorithmParamPtr>& inputArguments() const { return m_inputParams; }
-        inline const std::map<std::string, AlgorithmParamPtr>& outputArguments() const { return m_inputParams; }
+        inline const std::map<std::string, AlgorithmParamPtr>& outputArguments() const { return m_outputParams; }
 
     protected:
         AlgorithmInfo(
@@ -250,6 +251,9 @@ namespace cloudcv
     template <typename T>
     inline std::shared_ptr<ParameterBinding> TypedParameter<T>::createDefault()
     {
+        if (!m_default)
+            throw std::runtime_error("Parameter " + m_name + " does not have a default value");
+
         return std::shared_ptr<ParameterBinding>(new TypedBinding<T>(m_name, m_default()));
     }
 
@@ -257,12 +261,6 @@ namespace cloudcv
     class InputParameter
     {
     public:
-        static std::shared_ptr<ParameterBinding> Bind(AlgorithmParamPtr key, bool value);
-        static std::shared_ptr<ParameterBinding> Bind(AlgorithmParamPtr key, int value);
-        static std::shared_ptr<ParameterBinding> Bind(AlgorithmParamPtr key, double value);
-        static std::shared_ptr<ParameterBinding> Bind(AlgorithmParamPtr key, cv::Mat value);
-
-        // Untyped bind
         static std::shared_ptr<ParameterBinding> Bind(AlgorithmParamPtr key, const v8::Local<v8::Value>& value);
     };
 

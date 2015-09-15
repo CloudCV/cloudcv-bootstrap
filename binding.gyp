@@ -32,8 +32,6 @@
                 "src/framework/Algorithm.hpp",
                 "src/framework/Algorithm.cpp",
                 
-                "src/modules/common/ScopedTimer.hpp", 
-
                 "src/modules/HoughLines.cpp"
             ],
 
