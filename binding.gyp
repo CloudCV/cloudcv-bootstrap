@@ -31,6 +31,15 @@
 
                 "src/framework/Algorithm.hpp",
                 "src/framework/Algorithm.cpp",
+
+                "src/framework/AlgorithmInfo.hpp",
+                "src/framework/AlgorithmInfo.cpp",
+
+                "src/framework/Argument.hpp",
+                "src/framework/Argument.cpp",
+
+                "src/framework/AlgorithmExceptions.hpp",
+                "src/framework/AlgorithmExceptions.cpp",
                 
                 "src/modules/HoughLines.cpp"
             ],

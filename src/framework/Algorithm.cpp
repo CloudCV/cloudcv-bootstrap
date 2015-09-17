@@ -13,28 +13,7 @@ namespace cloudcv
 {
 
 
-    AlgorithmInfo::AlgorithmInfo(
-        const std::string& name,
-        std::initializer_list<std::pair<std::string, AlgorithmParamPtr>> in,
-        std::initializer_list<std::pair<std::string, AlgorithmParamPtr>> out)
-        : m_name(name)
-
-    {
-        for (auto i : in)
-        {
-            auto res = m_inputParams.insert(i);
-            if (!res.second)
-                throw ArgumentException("Duplicate argument name " + i.first);
-        }
-
-        for (auto o : out)
-        {
-            auto res = m_outputParams.insert(o);
-            if (!res.second)
-                throw ArgumentException("Duplicate argument name " + o.first);
-        }
-
-    }
+    
 
     class AlgorithmTask : public Job
     {
@@ -180,7 +159,7 @@ namespace cloudcv
     }
 
 
-    class InputParameterBinder : public AlgorithmParamVisitor
+    class InputArgumentBinder : public AlgorithmParamVisitor
     {
     private:
         const v8::Local<v8::Value>&       m_value;
@@ -189,7 +168,7 @@ namespace cloudcv
     protected:
 
         template <typename T>
-        inline bool convert(TypedParameter<T>* parameter)
+        inline bool convert(RangedArgument<T>* parameter)
         {
             if (m_value->IsUndefined() || m_value->IsNull())
             {
@@ -207,7 +186,7 @@ namespace cloudcv
         }
 
     public:
-        InputParameterBinder(const v8::Local<v8::Value>& value)
+        InputArgumentBinder(const v8::Local<v8::Value>& value)
             : m_value(value)
         {
         }
@@ -217,47 +196,47 @@ namespace cloudcv
             return m_bind;
         }
 
-        virtual bool apply(TypedParameter<bool>* parameter) override
+        virtual bool apply(RangedArgument<bool>* parameter) override
         {
             return convert(parameter);
         }
 
-        virtual bool apply(TypedParameter<ImageSource>* parameter) override
+        virtual bool apply(RangedArgument<ImageSource>* parameter) override
         {
             return convert(parameter);
         }
 
-        virtual bool apply(TypedParameter<double>* parameter) override
+        virtual bool apply(RangedArgument<double>* parameter) override
         {
             return convert(parameter);
         }
 
-        virtual bool apply(TypedParameter<float>* parameter) override
+        virtual bool apply(RangedArgument<float>* parameter) override
         {
             return convert(parameter);
         }
 
-        virtual bool apply(TypedParameter<int>* parameter) override
+        virtual bool apply(RangedArgument<int>* parameter) override
         {
             return convert(parameter);
         }
 
-        virtual bool apply(TypedParameter<std::vector<cv::Point2f>>* parameter) override
+        virtual bool apply(RangedArgument<std::vector<cv::Point2f>>* parameter) override
         {
             return convert(parameter);
         }
     };
 
 
-    std::shared_ptr<ParameterBinding> InputParameter::Bind(AlgorithmParamPtr key, const v8::Local<v8::Value>& value)
+    std::shared_ptr<ParameterBinding> InputParameter::Bind(InputArgumentPtr argument, const v8::Local<v8::Value>& value)
     {
-        InputParameterBinder visitor(value);
-        if (key->visit(&visitor))
+        InputArgumentBinder visitor(value);
+        if (argument->visit(&visitor))
         {
             return visitor.getBind();
         }
 
-        throw std::runtime_error("Cannot detect type of input parameter " + key->name());
+        throw std::runtime_error("Cannot detect type of input parameter " + argument->name());
     }
 
 }

@@ -41,13 +41,13 @@ namespace cloudcv
         HoughLinesAlgorithmInfo()
             : AlgorithmInfo(name(),
             {
-                { TypedParameter<ImageSource>::Create(InArgImage) },
-                { TypedParameter<float>::Create(InArgRho, 2) },
-                { TypedParameter<float>::Create(InArgTheta, 2) },
-                { TypedParameter<int>::Create(InArgThreshold, 5) }
+                { RequiredArgument<ImageSource>::Create(InArgImage) },
+                { RangedArgument<float>::Create(InArgRho, 1, 2, 100) },
+                { RangedArgument<float>::Create(InArgTheta, 1, 2, 100) },
+                { RangedArgument<int>::Create(InArgThreshold, 1, 2, 255) }
         },
         {
-            { OutputParameter< std::vector<cv::Point2f> >::Create(OutArgLines) }
+            { OutputArgument::Create< std::vector<cv::Point2f> >(OutArgLines) }
         }
             )
             {
