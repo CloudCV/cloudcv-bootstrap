@@ -26,7 +26,6 @@ namespace cloudcv
     class ParameterBinding
     {
     public:
-        virtual std::string name() const = 0;
         virtual std::string type() const = 0;
 
         virtual ~ParameterBinding() = default;
@@ -38,13 +37,18 @@ namespace cloudcv
     class TypedBinding : public ParameterBinding
     {
     public:
-        TypedBinding(const char * name)
-            : m_name(name)
+        TypedBinding(T value)
+            : m_value(value)
         {            
         }
 
-        std::string name() const { return m_name;           }
-        std::string type() const { return typeid(T).name(); }
+        TypedBinding()
+        {
+        }
+
+        static std::string static_type()  { return typeid(T).name(); }
+
+        std::string type() const { return static_type(); }
 
         inline const T& get() const
         {
@@ -64,36 +68,26 @@ namespace cloudcv
         }
 
     private:
-        std::string m_name;
         T           m_value;
     };
 
-    class InputArgumentVisitor
+
+    template<typename T>
+    std::shared_ptr<ParameterBinding> wrap_as_bind(const T& value)
     {
-    public:
-        virtual ~InputArgumentVisitor() = default;
+        return std::shared_ptr<ParameterBinding>(new TypedBinding<T>(value));
+    }
 
-        //template <typename T>
-        //bool accept(InputArgument<T> * argument);
-    };
-
-    class OutputArgumentVisitor
-    {
-    public:
-        virtual ~OutputArgumentVisitor() = default;
-
-        //template <typename T>
-        //bool accept(InputArgument<T> * argument);
-    };
 
     class InputArgument
     {
     public:
         virtual ~InputArgument() = default;
 
-        virtual bool visit(InputArgumentVisitor * visitor);
-
         virtual std::shared_ptr<ParameterBinding> bind(v8::Local<v8::Value> value) = 0;
+
+        const std::string& name() const { return m_name; }
+        const std::string& type() const { return m_type; }
 
     protected:
         InputArgument(const std::string& name, const std::string& type)
@@ -105,15 +99,18 @@ namespace cloudcv
         std::string m_type;
     };
 
+    typedef std::shared_ptr<InputArgument> InputArgumentPtr;
+
     class OutputArgument
     {
     public:
 
         virtual ~OutputArgument() = default;
 
-        virtual bool visit(OutputArgumentVisitor * visitor);
-
         virtual std::shared_ptr<ParameterBinding> bind() = 0; 
+
+        const std::string& name() const { return m_name; }
+        const std::string& type() const { return m_type; }
 
     protected:
         OutputArgument(const std::string& name, const std::string& type)
@@ -127,13 +124,20 @@ namespace cloudcv
         std::string m_type;
     };
 
+    typedef std::shared_ptr<OutputArgument> OutputArgumentPtr;
+
     template <typename T>
     class TypedOutputArgument : public OutputArgument
     {
     public:
-        std::shared_ptr<OutputArgument> Create(const char * name)
+        static std::pair<std::string, OutputArgumentPtr>  Create(const char * name)
         {
-            return std::shared_ptr<OutputArgument>(new TypedOutputArgument<T>(name));        
+            return std::make_pair(name, std::shared_ptr<OutputArgument>(new TypedOutputArgument<T>(name)));
+        }
+
+        std::shared_ptr<ParameterBinding> bind() override
+        {
+            return wrap_as_bind(T());
         }
 
     protected:
@@ -149,14 +153,14 @@ namespace cloudcv
     class RequiredArgument : public InputArgument
     {
     public:
-        static inline std::shared_ptr<InputArgument> Create(const char * name)
+        static inline std::pair<std::string, InputArgumentPtr> Create(const char * name)
         {
-            return std::shared_ptr<InputArgument>(new RequiredArgument<T>(name));
+            return std::make_pair(name, std::shared_ptr<InputArgument>(new RequiredArgument<T>(name)));
         }
 
         std::shared_ptr<ParameterBinding> bind(v8::Local<v8::Value> value) override
         {
-            return wrap(marshal<T>(value));
+            return wrap_as_bind(marshal<T>(value));
         }
 
     protected:
@@ -166,25 +170,25 @@ namespace cloudcv
         }
     };
 
+
     template <typename T>
     class RangedArgument : public InputArgument
     {
     public:
-        static inline std::shared_ptr<InputArgument> Create(const char * name, T minValue, T defaultValue, T maxValue)
+        static inline  std::pair<std::string, InputArgumentPtr> Create(const char * name, T minValue, T defaultValue, T maxValue)
         {
-            return std::shared_ptr<InputArgument>(new RangedArgument<T>(name, minValue, defaultValue, maxValue));
-        }
-
-        bool hasDefaultValue() const override
-        {
-            return true;
+            return std::make_pair(name, std::shared_ptr<InputArgument>(new RangedArgument<T>(name, minValue, defaultValue, maxValue)));
         }
 
         std::shared_ptr<ParameterBinding> bind(v8::Local<v8::Value> value) override
         {
-            return wrap(validate(marshal<T>(value)));
-        }
+            if (value->IsUndefined() || value->IsNull())
+            {
+                return wrap_as_bind(m_default);
+            }
 
+            return wrap_as_bind(validate(marshal<T>(value)));
+        }
 
     protected:
         inline RangedArgument(const char * name, T minValue, T defaultValue, T maxValue)
@@ -193,20 +197,16 @@ namespace cloudcv
             , m_max(maxValue)
             , m_default(defaultValue)
         {
-            if (minValue > defaultValue)
-                throw ArgumentException();
-
-            if (maxValue < defaultValue)
-                throw ArgumentException();
+            m_default = validate(m_default);
         }
 
         inline T validate(T value) const
         {
             if (value < m_min)
-                throw ArgumentBindException("Value cannot be less than " + std::to_string(m_min));
+                throw ArgumentBindException(name(), "Value cannot be less than " + std::to_string(m_min));
 
             if (value > m_max)
-                throw ArgumentBindException("Value cannot be greater than " + std::to_string(m_max));
+                throw ArgumentBindException(name(), "Value cannot be greater than " + std::to_string(m_max));
 
             return value;
         }

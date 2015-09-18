@@ -14,14 +14,14 @@ namespace cloudcv
         {
             auto res = m_inputParams.insert(i);
             if (!res.second)
-                throw ArgumentException("Duplicate argument name " + i.first);
+                throw ArgumentException(i.first, "Duplicate argument name");
         }
 
         for (auto o : out)
         {
             auto res = m_outputParams.insert(o);
             if (!res.second)
-                throw ArgumentException("Duplicate argument name " + o.first);
+                throw ArgumentException(o.first, "Duplicate argument name");
         }
 
     }

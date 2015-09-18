@@ -46,16 +46,18 @@ namespace cloudcv
         {
             auto it = inputArgs.find(name);
 
-            if (inputArgs.end() == it) {
-                throw ArgumentException("Cannot find parameter " + name);
-                // TODO: Check for null
+            if (inputArgs.end() == it)
+            {
+                throw ArgumentException(name, "Cannot find parameter");
             }
 
             auto binding = it->second;
 
             auto * bind = dynamic_cast<const TypedBinding<T>*>(it->second.get());
             if (bind == nullptr)
-                throw ArgumentTypeMismatchException(binding->name(), binding->type(), TypedBinding<T>::static_name());
+            {
+                throw ArgumentTypeMismatchException(name, binding->type(), TypedBinding<T>::static_type());
+            }
 
             return bind->get();
         }
@@ -66,15 +68,16 @@ namespace cloudcv
         {
             auto it = outputArgs.find(name);
 
-            if (outputArgs.end() == it) {
-                // TODO: Check for null
+            if (outputArgs.end() == it)
+            {
+                throw ArgumentException(name, "Cannot find parameter");
             }
 
             auto binding = it->second;
 
             auto * bind = dynamic_cast<TypedBinding<T>*>(it->second.get());
             if (bind == nullptr)
-                throw ArgumentTypeMismatchException(binding->name(), binding->type(), TypedBinding<T>::static_name());
+                throw ArgumentTypeMismatchException(name, binding->type(), TypedBinding<T>::static_type());
 
             return bind->get();
         }

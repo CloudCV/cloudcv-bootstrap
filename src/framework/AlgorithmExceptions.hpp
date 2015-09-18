@@ -9,7 +9,7 @@ namespace cloudcv
     class ArgumentException : public std::runtime_error
     {
     public:
-        ArgumentException(const std::string& message);
+        ArgumentException(const std::string& argumentName, const std::string& message);
     };
 
     class MissingInputArgumentException : public ArgumentException
@@ -30,6 +30,6 @@ namespace cloudcv
     class ArgumentBindException : public ArgumentException
     {
     public:
-        ArgumentBindException(std::string argumentName, std::string actualType, std::string expectedType);
+        ArgumentBindException(std::string argumentName, std::string message);
     };
 }

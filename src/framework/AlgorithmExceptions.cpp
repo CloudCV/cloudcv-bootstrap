@@ -2,23 +2,23 @@
 
 namespace cloudcv
 {
-    ArgumentException::ArgumentException(const std::string& message) 
-        : std::runtime_error(message)
+    ArgumentException::ArgumentException(const std::string& argumentName, const std::string& message)
+        : std::runtime_error(argumentName + ":" + message)
     {
     }
 
     MissingInputArgumentException::MissingInputArgumentException(std::string argumentName)
-        : ArgumentException("Missing argument " + argumentName)
+        : ArgumentException(argumentName, "Missing argument")
     {
     }
 
     ArgumentTypeMismatchException::ArgumentTypeMismatchException(std::string argumentName, std::string actualType, std::string expectedType)
-        : ArgumentException("Incompatible type for " + argumentName + " expected " + expectedType + " got " + actualType)
+        : ArgumentException(argumentName, "Expected type " + expectedType + " got: " + actualType)
     {
     }
 
-    ArgumentBindException::ArgumentBindException(std::string argumentName, std::string actualType, std::string expectedType)
-        : ArgumentException("ArgumentBindException for argument " + argumentName)
+    ArgumentBindException::ArgumentBindException(std::string argumentName, std::string message)
+        : ArgumentException(argumentName, message)
     {
     }
 
