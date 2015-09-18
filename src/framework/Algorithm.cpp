@@ -11,10 +11,6 @@
 
 namespace cloudcv
 {
-
-
-    
-
     class AlgorithmTask : public Job
     {
         AlgorithmPtr                               m_algorithm;
@@ -123,16 +119,15 @@ namespace cloudcv
                         argumentValue = inputArguments->Get(propertyName);
 
                     LOG_TRACE_MESSAGE("Binding input argument " << arg.first);
+                    auto bind = arg.second->bind(argumentValue);
 
-                    auto bind = InputParameter::Bind(arg.second, argumentValue);
                     inArgs.insert(std::make_pair(arg.first, bind));
                 }
 
                 for (auto arg : info->outputArguments())
                 {
                     LOG_TRACE_MESSAGE("Binding output argument " << arg.first);
-
-                    auto bind = arg.second->createDefault();
+                    auto bind = arg.second->bind();
                     outArgs.insert(std::make_pair(arg.first, bind));
                 }
 

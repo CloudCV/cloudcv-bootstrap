@@ -19,15 +19,10 @@ namespace cloudcv
         return m_type;
     }
 
-    InputArgument::InputArgument(const std::string& name, const std::string& type)
-        : Argument(name, type)
+    bool Argument::hasDefaultValue() const;
     {
+        return false;
     }
 
-
-    OutputArgument::OutputArgument(const std::string& name, const std::string& type)
-        : Argument(name, type)
-    {
-    }
 
 }

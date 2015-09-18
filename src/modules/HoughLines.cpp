@@ -47,7 +47,7 @@ namespace cloudcv
                 { RangedArgument<int>::Create(InArgThreshold, 1, 2, 255) }
         },
         {
-            { OutputArgument::Create< std::vector<cv::Point2f> >(OutArgLines) }
+            { TypedOutputArgument< std::vector<cv::Point2f> >::Create(OutArgLines) }
         }
             )
             {
