@@ -10,6 +10,14 @@ namespace cloudcv
     {
     public:
         ArgumentException(const std::string& argumentName, const std::string& message);
+
+        const std::string& argument() const;
+        
+        const char * what() const override;
+
+    private:
+        std::string m_argumentName;
+        std::string m_message;
     };
 
     class MissingInputArgumentException : public ArgumentException

@@ -215,8 +215,10 @@ namespace cloudcv
             template<typename InputArchive>
             static inline void load(InputArchive& ar, std::string& val)
             {
-                Nan::Utf8String cStr(ar);
-                val = std::string(*cStr, cStr.length());
+                size_t len = Nan::DecodeBytes(ar, Nan::ASCII);
+                val.resize(len);
+                Nan::DecodeWrite(const_cast<char*>(val.data()), len, ar, Nan::ASCII);
+                int d = 0;
             }
 
             template<typename OutputArchive>

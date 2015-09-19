@@ -41,5 +41,33 @@ describe('cv', function() {
             });
         });      
 
+        it('shouldReturnError (Empty input)', function(done) {
+
+            cloudcv.houghLines(null, function(error, result) { 
+                console.log(inspect(error));
+                console.log(inspect(result));
+                done();
+            });
+            
+        });  
+
+        it('shouldReturnError (Missing argument)', function(done) {
+
+            cloudcv.houghLines({}, function(error, result) { 
+                console.log(inspect(error));
+                console.log(inspect(result));
+                done();
+            });
+        });  
+
+        it('shouldReturnError (Incorrect type)', function(done) {
+
+            cloudcv.houghLines({ "image": 2}, function(error, result) { 
+                console.log(inspect(error));
+                console.log(inspect(result));
+                done();
+            });
+        });  
+
     });
 });

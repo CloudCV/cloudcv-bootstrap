@@ -3,9 +3,22 @@
 namespace cloudcv
 {
     ArgumentException::ArgumentException(const std::string& argumentName, const std::string& message)
-        : std::runtime_error(argumentName + ":" + message)
+        : std::runtime_error(nullptr)
+        , m_argumentName(argumentName)
+        , m_message(message)
     {
     }
+
+    const std::string& ArgumentException::argument() const 
+    {
+        return m_argumentName; 
+    }
+
+    const char * ArgumentException::what() const
+    {
+        return m_message.c_str();
+    }
+
 
     MissingInputArgumentException::MissingInputArgumentException(std::string argumentName)
         : ArgumentException(argumentName, "Missing argument")

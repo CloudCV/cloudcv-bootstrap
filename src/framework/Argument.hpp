@@ -160,6 +160,11 @@ namespace cloudcv
 
         std::shared_ptr<ParameterBinding> bind(v8::Local<v8::Value> value) override
         {
+            if (value->IsUndefined() || value->IsNull())
+            {
+                throw ArgumentBindException(name(), "Missing required argument");
+            }
+
             return wrap_as_bind(marshal<T>(value));
         }
 

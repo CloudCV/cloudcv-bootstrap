@@ -3,7 +3,7 @@
 #include "framework/ScopedTimer.hpp"
 #include "framework/Job.hpp"
 #include "framework/marshal/marshal.hpp"
-#include "framework/NanCheck.hpp"
+//#include "framework/NanCheck.hpp"
 
 #include <node.h>
 #include <v8.h>
@@ -86,6 +86,7 @@ namespace cloudcv
         }
     };
 
+
     void ProcessAlgorithm(AlgorithmPtr algorithm, Nan::NAN_METHOD_ARGS_TYPE args)
     {
         TRACE_FUNCTION;
@@ -95,62 +96,102 @@ namespace cloudcv
         TRACE_FUNCTION;
         Nan::HandleScope scope;
 
-        v8::Local<v8::Object>   inputArguments;
-        v8::Local<v8::Function> resultsCallback;
         std::string     error;
 
-        if (NanCheck(args)
-            .Error(&error)
-            .ArgumentsCount(2)
-            .Argument(0).IsObject().Bind(inputArguments)
-            .Argument(1).IsFunction().Bind(resultsCallback))
+        if (args.Length() != 2)
         {
-            try
+            LOG_TRACE_MESSAGE("Got " + std::to_string(args.Length()) + " arguments instead of 2");
+            Nan::ThrowTypeError("This function should be called with 2 arguments: input and callback");
+            return;
+        }
+
+        if (!args[1]->IsFunction())
+        {
+            LOG_TRACE_MESSAGE("Incorrect type of second argument");
+            Nan::ThrowTypeError("Second argument should be a function callback");
+            return;
+        }
+
+        v8::Local<v8::Function> resultsCallback = args[1].As<v8::Function>();
+
+        if (!args[0]->IsObject())
+        {
+            LOG_TRACE_MESSAGE("Incorrect type of first argument");
+
+            v8::Local<v8::Value> argv[] = { Nan::Error("First argument should be an object"), Nan::Null() };
+            Nan::Callback(resultsCallback).Call(2, argv);
+            return;
+        }
+
+        v8::Local<v8::Object>   inputArguments = args[0].As<v8::Object>();
+
+
+        try
+        {
+            //Nan::TryCatch trycatch;
+
+            auto info = algorithm->info();
+            std::map<std::string, ParameterBindingPtr> inArgs, outArgs;
+
+            for (auto arg : info->inputArguments())
             {
-                auto info = algorithm->info();
-                std::map<std::string, ParameterBindingPtr> inArgs, outArgs;
+                auto propertyName = marshal(arg.first);
+                v8::Local<v8::Value> argumentValue = Nan::Null();
 
-                for (auto arg : info->inputArguments())
-                {
-                    auto propertyName = marshal(arg.first);
-                    v8::Local<v8::Value> argumentValue = Nan::Null();
+                if (inputArguments->HasRealNamedProperty(propertyName->ToString()))
+                    argumentValue = inputArguments->Get(propertyName);
 
-                    if (inputArguments->HasRealNamedProperty(propertyName->ToString()))
-                        argumentValue = inputArguments->Get(propertyName);
+                LOG_TRACE_MESSAGE("Binding input argument " << arg.first);
+                auto bind = arg.second->bind(argumentValue);
 
-                    LOG_TRACE_MESSAGE("Binding input argument " << arg.first);
-                    auto bind = arg.second->bind(argumentValue);
+                inArgs.insert(std::make_pair(arg.first, bind));
+            }
 
-                    inArgs.insert(std::make_pair(arg.first, bind));
-                }
+            for (auto arg : info->outputArguments())
+            {
+                LOG_TRACE_MESSAGE("Binding output argument " << arg.first);
+                auto bind = arg.second->bind();
+                outArgs.insert(std::make_pair(arg.first, bind));
+            }
 
-                for (auto arg : info->outputArguments())
-                {
-                    LOG_TRACE_MESSAGE("Binding output argument " << arg.first);
-                    auto bind = arg.second->bind();
-                    outArgs.insert(std::make_pair(arg.first, bind));
-                }
+            //if (trycatch.HasCaught())
+            //{
+            //    //auto msg = marshal<std::string>(trycatch.Message()->Get());
+            //    //LOG_TRACE_MESSAGE(msg);
+            //}
 
-                Nan::Callback *callback = new Nan::Callback(resultsCallback);
+            //if (trycatch.CanContinue())
+            {
+                Nan::Callback * callback = new Nan::Callback(resultsCallback);
                 Nan::AsyncQueueWorker(new AlgorithmTask(algorithm, inArgs, outArgs, callback));
             }
-            catch (cv::Exception& er)
-            {
-                LOG_TRACE_MESSAGE(er.what());
-                Nan::ThrowError(er.what());
-            }
-            catch (std::runtime_error& er)
-            {
-                LOG_TRACE_MESSAGE(er.what());
-                Nan::ThrowError(er.what());
-            }
-
         }
-        else if (!error.empty())
+        catch (cv::Exception& er)
         {
-            LOG_TRACE_MESSAGE("Cannot parse input arguments: " << error.c_str());
-            Nan::ThrowTypeError(error.c_str());
+            LOG_TRACE_MESSAGE(er.what());
+            std::string error = er.what();
+            v8::Local<v8::Value> argv[] = { Nan::Error(error.c_str()), Nan::Null() };
+            Nan::Callback(resultsCallback).Call(2, argv);
         }
+        catch (ArgumentException& er)
+        {
+            LOG_TRACE_MESSAGE(er.what());
+            std::string error = er.what();
+            v8::Local<v8::Value> argv[] = { Nan::Error(error.c_str()), Nan::Null() };
+            Nan::Callback(resultsCallback).Call(2, argv);
+        }
+        catch (std::runtime_error& er)
+        {
+            LOG_TRACE_MESSAGE(er.what());
+            std::string error = er.what();
+            v8::Local<v8::Value> argv[] = { Nan::Error(error.c_str()), Nan::Null() };
+            Nan::Callback(resultsCallback).Call(2, argv);
+        }
+        catch (...)
+        {
+            LOG_TRACE_MESSAGE("Unknown error");
+        }
+
     }
 
 
