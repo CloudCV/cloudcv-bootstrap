@@ -25,4 +25,16 @@ namespace cloudcv
         }
 
     }
+
+    std::map<std::string, AlgorithmInfoPtr> AlgorithmInfo::m_algorithms;
+
+    void AlgorithmInfo::Register(AlgorithmInfoPtr info)
+    {
+        m_algorithms.insert(make_pair(info->name(), info));
+    }
+
+    const std::map<std::string, AlgorithmInfoPtr>& AlgorithmInfo::Get()
+    {
+        return m_algorithms;
+    }
 }

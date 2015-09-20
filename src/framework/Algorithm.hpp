@@ -32,7 +32,6 @@ namespace cloudcv
     {
     public:
         virtual ~Algorithm() = default;
-        virtual AlgorithmInfoPtr info() = 0;
         virtual void process(
             const std::map<std::string, ParameterBindingPtr>& inArgs,
             const std::map<std::string, ParameterBindingPtr>& outArgs

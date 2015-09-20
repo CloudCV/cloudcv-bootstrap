@@ -17,19 +17,13 @@
 
 namespace cloudcv
 {
-    class HoughLinesAlgorithm : public Algorithm
+    class HoughLinesAlgorithmInfo : public AlgorithmInfo
     {
-    protected:
     public:
-        static std::string name();
-        AlgorithmInfoPtr info() override;
+        HoughLinesAlgorithmInfo();
 
-        void process(
-            const std::map<std::string, ParameterBindingPtr>& inArgs,
-            const std::map<std::string, ParameterBindingPtr>& outArgs
-            ) override;
-
-        static AlgorithmPtr create();
+        AlgorithmPtr create() const override;
+        Nan::FunctionCallback getFunction() const override;
     };
 }
 

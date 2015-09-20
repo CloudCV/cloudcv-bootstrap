@@ -29,71 +29,57 @@ namespace cloudcv
 
     static const char * OutArgLines = "lines";
 
-    class HoughLinesAlgorithmInfo : public AlgorithmInfo
+    class HoughLinesAlgorithm : public Algorithm
     {
     public:
 
-        static inline std::string name()
+        void process(
+            const std::map<std::string, ParameterBindingPtr>& inArgs,
+            const std::map<std::string, ParameterBindingPtr>& outArgs
+            ) override
         {
-            return "houghLines";
-        }
+            TRACE_FUNCTION;
+            ImageSource source = getInput<ImageSource>(inArgs, InArgImage);
+            const float rho = getInput<float>(inArgs, InArgRho);
+            const float theta = getInput<float>(inArgs, InArgTheta);
+            const int threshold = getInput<int>(inArgs, InArgThreshold);
+            cv::Mat inputImage = source.getImage(cv::IMREAD_GRAYSCALE);
 
-        HoughLinesAlgorithmInfo()
-            : AlgorithmInfo(name(),
-            {
-                { RequiredArgument<ImageSource>::Create(InArgImage) },
-                { RangedArgument<float>::Create(InArgRho, 1, 2, 100) },
-                { RangedArgument<float>::Create(InArgTheta, 1, 2, 100) },
-                { RangedArgument<int>::Create(InArgThreshold, 1, 2, 255) }
-        },
-        {
-            { TypedOutputArgument< std::vector<cv::Point2f> >::Create(OutArgLines) }
-        }
-            )
-            {
+            std::vector<cv::Point2f>&lines = getOutput<std::vector<cv::Point2f> >(outArgs, OutArgLines);
+
+            cv::HoughLines(inputImage, lines, rho, theta, threshold);
+            LOG_TRACE_MESSAGE("Detected " << lines.size() << " lines");
         }
     };
 
-    std::string HoughLinesAlgorithm::name()
+
+    HoughLinesAlgorithmInfo::HoughLinesAlgorithmInfo()
+        : AlgorithmInfo("houghLines",
+        {
+            { RequiredArgument<ImageSource>::Create(InArgImage) },
+            { RangedArgument<float>::Create(InArgRho, 1, 2, 100) },
+            { RangedArgument<float>::Create(InArgTheta, 1, 2, 100) },
+            { RangedArgument<int>::Create(InArgThreshold, 1, 2, 255) }
+    },
     {
-        return HoughLinesAlgorithmInfo::name();
+        { TypedOutputArgument< std::vector<cv::Point2f> >::Create(OutArgLines) }
     }
-
-    AlgorithmInfoPtr HoughLinesAlgorithm::info()
-    {
-        static std::shared_ptr<AlgorithmInfo> _info;
-        if (!_info)
-            _info.reset(new HoughLinesAlgorithmInfo);
-
-        return _info;
-    }
-
-    void HoughLinesAlgorithm::process(
-        const std::map<std::string, ParameterBindingPtr>& inArgs,
-        const std::map<std::string, ParameterBindingPtr>& outArgs
         )
-    {
-        TRACE_FUNCTION;
-        ImageSource source = getInput<ImageSource>(inArgs, InArgImage);
-        const float rho = getInput<float>(inArgs, InArgRho);
-        const float theta = getInput<float>(inArgs, InArgTheta);
-        const int threshold = getInput<int>(inArgs, InArgThreshold);
-        cv::Mat inputImage = source.getImage(cv::IMREAD_GRAYSCALE);
-
-        std::vector<cv::Point2f>&lines = getOutput<std::vector<cv::Point2f> >(outArgs, OutArgLines);
-
-        cv::HoughLines(inputImage, lines, rho, theta, threshold);
-        LOG_TRACE_MESSAGE("Detected " << lines.size() << " lines");
+        {
     }
 
-    AlgorithmPtr HoughLinesAlgorithm::create()
-    {
-        return AlgorithmPtr(new HoughLinesAlgorithm());
-    }
-}
+        AlgorithmPtr HoughLinesAlgorithmInfo::create() const
+        {
+            return AlgorithmPtr(new HoughLinesAlgorithm());
+        }
 
-NAN_METHOD(houghLines)
-{
-    TRACE_FUNCTION;
-    ProcessAlgorithm(cloudcv::HoughLinesAlgorithm::create(), info);
+        NAN_METHOD(HoughLinesAlgorithmInfoProcess)
+        {
+        }
+
+        Nan::FunctionCallback HoughLinesAlgorithmInfo::getFunction() const
+        {
+            return HoughLinesAlgorithmInfoProcess;
+        }
+
 }

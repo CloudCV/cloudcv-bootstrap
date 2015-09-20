@@ -13,6 +13,10 @@
 
 namespace cloudcv
 {
+    class Algorithm;
+    class AlgorithmInfo;
+    typedef std::shared_ptr<AlgorithmInfo> AlgorithmInfoPtr;
+
     class AlgorithmInfo
     {
     public:
@@ -30,6 +34,14 @@ namespace cloudcv
         {
             return m_outputParams;
         }
+        
+        virtual std::shared_ptr<Algorithm> create() const = 0;
+
+        static void Register(AlgorithmInfoPtr info);
+        static const std::map<std::string, AlgorithmInfoPtr>& Get();
+
+        virtual Nan::FunctionCallback getFunction() const = 0;
+
 
     protected:
         AlgorithmInfo(
@@ -42,5 +54,6 @@ namespace cloudcv
         std::map<std::string, InputArgumentPtr>  m_inputParams;
         std::map<std::string, OutputArgumentPtr> m_outputParams;
 
+        static std::map<std::string, AlgorithmInfoPtr> m_algorithms;
     };
 }

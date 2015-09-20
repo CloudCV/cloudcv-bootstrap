@@ -30,7 +30,6 @@ namespace cloudcv
             , m_output(outArgs)
         {
             TRACE_FUNCTION;
-            LOG_TRACE_MESSAGE(alg->info()->name());
             LOG_TRACE_MESSAGE("Input arguments:" << inArgs.size());
             LOG_TRACE_MESSAGE("Output arguments:" << outArgs.size());
         }
@@ -87,7 +86,7 @@ namespace cloudcv
     };
 
 
-    void ProcessAlgorithm(AlgorithmPtr algorithm, Nan::NAN_METHOD_ARGS_TYPE args)
+    void ProcessAlgorithm(AlgorithmInfoPtr algorithm, Nan::NAN_METHOD_ARGS_TYPE args)
     {
         TRACE_FUNCTION;
         
@@ -130,7 +129,7 @@ namespace cloudcv
         {
             //Nan::TryCatch trycatch;
 
-            auto info = algorithm->info();
+            auto info = algorithm;
             std::map<std::string, ParameterBindingPtr> inArgs, outArgs;
 
             for (auto arg : info->inputArguments())
@@ -163,7 +162,7 @@ namespace cloudcv
             //if (trycatch.CanContinue())
             {
                 Nan::Callback * callback = new Nan::Callback(resultsCallback);
-                Nan::AsyncQueueWorker(new AlgorithmTask(algorithm, inArgs, outArgs, callback));
+                Nan::AsyncQueueWorker(new AlgorithmTask(algorithm->create(), inArgs, outArgs, callback));
             }
         }
         catch (cv::Exception& er)

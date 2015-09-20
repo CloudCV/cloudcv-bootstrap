@@ -3,6 +3,7 @@
 #include <string>
 #include <memory>
 #include <stdexcept>
+#include "framework/CompilerSupport.hpp"
 
 namespace cloudcv
 {
@@ -11,9 +12,9 @@ namespace cloudcv
     public:
         ArgumentException(const std::string& argumentName, const std::string& message);
 
-        const std::string& argument() const;
+        const std::string& argument() const CLOUDCV_NOTHROW;
         
-        const char * what() const override;
+        const char * what() const CLOUDCV_NOTHROW override;
 
     private:
         std::string m_argumentName;
