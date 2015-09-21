@@ -48,7 +48,7 @@ namespace cloudcv
 
         static std::string static_type()  { return typeid(T).name(); }
 
-        std::string type() const { return static_type(); }
+        std::string type() const override { return static_type(); }
 
         inline const T& get() const
         {
