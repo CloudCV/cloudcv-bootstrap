@@ -9,12 +9,12 @@ namespace cloudcv
     {
     }
 
-    const std::string& ArgumentException::argument() const 
+    const std::string& ArgumentException::argument() const CLOUDCV_NOTHROW
     {
         return m_argumentName; 
     }
 
-    const char * ArgumentException::what() const
+    const char * ArgumentException::what() const CLOUDCV_NOTHROW
     {
         return m_message.c_str();
     }

@@ -44,12 +44,12 @@ namespace cloudcv
             const char * what() const CLOUDCV_NOTHROW override
             {
                   return m_message.c_str();
-        }
+            }
+
             inline MarshalTypeMismatchException(const char * message)
                 : std::runtime_error(nullptr)
                 , m_message(message)
             {
-
                 }
 
         private:
