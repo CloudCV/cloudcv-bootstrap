@@ -1,5 +1,8 @@
-sudo: false
+sudo: required
+before_install:
 install:
+# We want to compile with g++ 4.8 when rather than the default g++
+  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
   - npm install
 language: node_js
 node_js:
