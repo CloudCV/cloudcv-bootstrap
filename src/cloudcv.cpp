@@ -31,18 +31,66 @@ NAN_METHOD(getAlgorithms)
     info.GetReturnValue().Set(marshal(algorithms));
 }
 
+NAN_METHOD(processFunction)
+{
+    Nan::HandleScope scope;
+
+    
+    if (info.Length() != 3)
+    {
+        LOG_TRACE_MESSAGE("Got " + std::to_string(info.Length()) + " arguments instead of 2");
+        Nan::ThrowTypeError("This function should be called with 3 arguments: algorithm name, input and callback");
+        return;
+    }
+
+    if (!info[0]->IsString())
+    {
+        LOG_TRACE_MESSAGE("First argument should be a string with algorithm name");
+        Nan::ThrowTypeError("First argument should be a string with algorithm name");
+        return;
+    }
+
+    if (!info[1]->IsObject())
+    {
+        LOG_TRACE_MESSAGE("Second argument should be an object");
+        Nan::ThrowTypeError("Second argument should be an object");
+        return;
+    }
+
+    if (!info[2]->IsFunction())
+    {
+        LOG_TRACE_MESSAGE("Incorrect type of second argument");
+        Nan::ThrowTypeError("Thirds argument should be a function callback");
+        return;
+    }
+
+    std::string   algorithmName = marshal<std::string>(info[0].As<v8::String>());
+    v8::Local<v8::Object>   inputArguments = info[1].As<v8::Object>();
+    v8::Local<v8::Function> resultsCallback = info[2].As<v8::Function>();
+
+    auto algorithm = AlgorithmInfo::Get().find(algorithmName);
+    if (algorithm == AlgorithmInfo::Get().end())
+    {
+        v8::Local<v8::Value> argv[] = { Nan::Error("Algorithm not found"), Nan::Null() };
+        Nan::Callback(resultsCallback).Call(2, argv);
+        return;
+    }
+
+    ProcessAlgorithm(algorithm->second, inputArguments, resultsCallback);
+}
+
+
 NAN_MODULE_INIT(RegisterModule)
 {
+    AlgorithmInfo::Register(new HoughLinesAlgorithmInfo);
+
     Set(target,
         New<v8::String>("getAlgorithms").ToLocalChecked(),
         GetFunction(New<v8::FunctionTemplate>(getAlgorithms)).ToLocalChecked());
 
-    for (auto alg : AlgorithmInfo::Get())
-    {
-        Set(target,
-            New<v8::String>(alg.first).ToLocalChecked(),
-            GetFunction(New<v8::FunctionTemplate>(alg.second->getFunction())).ToLocalChecked());
-    }
+    Set(target,
+        New<v8::String>("processFunction").ToLocalChecked(),
+        GetFunction(New<v8::FunctionTemplate>(processFunction)).ToLocalChecked());
 }
 
 NODE_MODULE(cloudcv, RegisterModule);

@@ -37,7 +37,7 @@ namespace cloudcv
         
         virtual std::shared_ptr<Algorithm> create() const = 0;
 
-        static void Register(AlgorithmInfoPtr info);
+        static void Register(AlgorithmInfo * info);
         static const std::map<std::string, AlgorithmInfoPtr>& Get();
 
         virtual Nan::FunctionCallback getFunction() const = 0;

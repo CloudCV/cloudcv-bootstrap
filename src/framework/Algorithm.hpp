@@ -84,6 +84,6 @@ namespace cloudcv
 
     typedef std::shared_ptr<Algorithm> AlgorithmPtr;
 
-    void ProcessAlgorithm(AlgorithmPtr algorithm, Nan::NAN_METHOD_ARGS_TYPE args);
+    void ProcessAlgorithm(AlgorithmInfoPtr algorithm, v8::Local<v8::Object> args, v8::Local<v8::Function> resultsCallback);
 
 }

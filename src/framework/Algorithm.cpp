@@ -86,7 +86,7 @@ namespace cloudcv
     };
 
 
-    void ProcessAlgorithm(AlgorithmInfoPtr algorithm, Nan::NAN_METHOD_ARGS_TYPE args)
+    void ProcessAlgorithm(AlgorithmInfoPtr algorithm, v8::Local<v8::Object> inputArguments, v8::Local<v8::Function> resultsCallback)
     {
         TRACE_FUNCTION;
         
@@ -94,35 +94,6 @@ namespace cloudcv
 
         TRACE_FUNCTION;
         Nan::HandleScope scope;
-
-        std::string     error;
-
-        if (args.Length() != 2)
-        {
-            LOG_TRACE_MESSAGE("Got " + std::to_string(args.Length()) + " arguments instead of 2");
-            Nan::ThrowTypeError("This function should be called with 2 arguments: input and callback");
-            return;
-        }
-
-        if (!args[1]->IsFunction())
-        {
-            LOG_TRACE_MESSAGE("Incorrect type of second argument");
-            Nan::ThrowTypeError("Second argument should be a function callback");
-            return;
-        }
-
-        v8::Local<v8::Function> resultsCallback = args[1].As<v8::Function>();
-
-        if (!args[0]->IsObject())
-        {
-            LOG_TRACE_MESSAGE("Incorrect type of first argument");
-
-            v8::Local<v8::Value> argv[] = { Nan::Error("First argument should be an object"), Nan::Null() };
-            Nan::Callback(resultsCallback).Call(2, argv);
-            return;
-        }
-
-        v8::Local<v8::Object>   inputArguments = args[0].As<v8::Object>();
 
 
         try

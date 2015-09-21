@@ -13,6 +13,7 @@
 
 #include "framework/Logger.hpp"
 #include "framework/ImageSource.hpp"
+#include "framework/CompilerSupport.hpp"
 
 typedef v8::Local<v8::Value> V8Result;
 
@@ -39,10 +40,20 @@ namespace cloudcv
         class MarshalTypeMismatchException : public std::runtime_error
         {
         public:
-            inline MarshalTypeMismatchException(const char * message) : std::runtime_error(message)
+
+            const char * what() const CLOUDCV_NOTHROW override
+            {
+                  return m_message.c_str();
+        }
+            inline MarshalTypeMismatchException(const char * message)
+                : std::runtime_error(nullptr)
+                , m_message(message)
             {
 
-            }
+                }
+
+        private:
+            std::string m_message;
         };
 
 
@@ -64,25 +75,25 @@ namespace cloudcv
 
             explicit inline nvp_struct(const char * name_, T & value_)
                 : name(name_)
-                , value(value_)        
+                , value(value_)
             {}
 
             inline nvp_struct(const nvp_struct & rhs)
                 : name(rhs.name)
-                , value(rhs.value)        
+                , value(rhs.value)
             {}
         };
 
         template <typename T>
         inline nvp_struct<T> make_nvp(const char * name, T& val)
         {
-            return nvp_struct<T>( name, val );
+            return nvp_struct<T>(name, val);
         }
 
         template <typename T>
         inline nvp_struct<T> make_nvp(const char * name, const T& val)
         {
-            return nvp_struct<T>( name, const_cast<T&>(val) );
+            return nvp_struct<T>(name, const_cast<T&>(val));
         }
 
         template<typename Archive, typename T>
@@ -106,43 +117,43 @@ namespace cloudcv
             }
         };
 
-        #define BASIC_TYPE_SERIALIZER(type)\
-        template<> \
+#define BASIC_TYPE_SERIALIZER(type)\
+    template<> \
         struct Serializer<type> \
         {\
-            template<typename InputArchive>\
-            static inline void load(InputArchive& ar, type& val)\
-            {\
-                ar.load(val);\
-            }\
-            template<typename OutputArchive>\
-            static inline void save(OutputArchive& ar, const type& val)\
-            {\
-                ar.save(val);\
-            }\
+        template<typename InputArchive>\
+        static inline void load(InputArchive& ar, type& val)\
+        {\
+        ar.load(val); \
+        }\
+        template<typename OutputArchive>\
+        static inline void save(OutputArchive& ar, const type& val)\
+        {\
+        ar.save(val); \
+        }\
         }
 
-        #define ENUM_SERIALIZER(type)\
-        template<>\
+#define ENUM_SERIALIZER(type)\
+    template<>\
         struct Serializer<type>\
         {\
-            template<typename InputArchive>\
-            static inline void load(InputArchive& ar, type& val)\
-            {\
-                int int_val;\
-                ar & int_val;\
-                val = (type) int_val;\
-            }\
-            template<typename OutputArchive>\
-            static inline void save(OutputArchive& ar, const type& val)\
-            {\
-                int int_val = (int)val;\
-                ar & int_val;\
-            }\
+        template<typename InputArchive>\
+        static inline void load(InputArchive& ar, type& val)\
+        {\
+        int int_val; \
+        ar & int_val; \
+        val = (type)int_val; \
+        }\
+        template<typename OutputArchive>\
+        static inline void save(OutputArchive& ar, const type& val)\
+        {\
+        int int_val = (int)val; \
+        ar & int_val; \
+        }\
         }
 
         // declare serializers for simple types
-        
+
         BASIC_TYPE_SERIALIZER(char);
         BASIC_TYPE_SERIALIZER(unsigned char);
         BASIC_TYPE_SERIALIZER(short);
@@ -155,7 +166,7 @@ namespace cloudcv
         BASIC_TYPE_SERIALIZER(float);
         BASIC_TYPE_SERIALIZER(double);
         BASIC_TYPE_SERIALIZER(bool);
-        
+
 
         // serializer for std::vector
         template<typename T>
@@ -178,7 +189,7 @@ namespace cloudcv
             template<typename OutputArchive>
             static inline void save(OutputArchive& ar, const std::vector<T>& val)
             {
-                auto result = Nan::New<v8::Array>( (int)val.size());
+                auto result = Nan::New<v8::Array>((int)val.size());
 
                 for (uint32_t i = 0; i < val.size(); i++)
                 {
@@ -197,14 +208,14 @@ namespace cloudcv
             template<typename InputArchive>
             static inline void load(InputArchive& ar, std::pair<K, V>& val)
             {
-                ar & make_nvp("key",   val.first);
+                ar & make_nvp("key", val.first);
                 ar & make_nvp("value", val.second);
             }
 
             template<typename OutputArchive>
             static inline void save(OutputArchive& ar, const std::pair<K, V>& val)
             {
-                ar & make_nvp("key",   val.first);
+                ar & make_nvp("key", val.first);
                 ar & make_nvp("value", val.second);
             }
         };
@@ -240,7 +251,7 @@ namespace cloudcv
                 for (int i = 0; i < N; i++)
                 {
                     V8Result item = ar.template As<v8::Array>()->Get(i);
-                    map_val.insert( marshal< std::pair<K,V> >(item) );
+                    map_val.insert(marshal< std::pair<K, V> >(item));
                 }
             }
 
@@ -326,7 +337,7 @@ namespace cloudcv
         };
 
         template<typename T, std::size_t N>
-        struct Serializer < std::array<T,N> >
+        struct Serializer < std::array<T, N> >
         {
             template<typename InputArchive>
             static inline void load(InputArchive& ar, std::array<T, N>& val)
@@ -388,12 +399,12 @@ namespace cloudcv
 
             inline SaveArchive(V8Result& dst) : _dst(dst)
             {
-                
+
             }
 
             inline ~SaveArchive()
             {
-                
+
             }
 
             typedef bool_<false> is_loading;
@@ -521,11 +532,11 @@ namespace cloudcv
             if (!_src->IsBoolean())
                 throw MarshalTypeMismatchException("Argument is not a boolean");
 
-            val = _src->BooleanValue(); 
+            val = _src->BooleanValue();
         }
 
         template<>
-        inline void LoadArchive::load(int& val)        
+        inline void LoadArchive::load(int& val)
         {
             if (!_src->IsInt32())
                 throw MarshalTypeMismatchException("Argument is not a number");
@@ -535,11 +546,11 @@ namespace cloudcv
 
         template<>
         inline void LoadArchive::load(float& val)
-        {            
-            if (!_src->IsNumber()) 
+        {
+            if (!_src->IsNumber())
                 throw MarshalTypeMismatchException("Argument is not a number");
-              
-            val = (float)_src->NumberValue(); 
+
+            val = (float)_src->NumberValue();
         }
 
         template<>
@@ -553,8 +564,8 @@ namespace cloudcv
 
         template<>
         inline void LoadArchive::load(uint32_t& val)
-        { 
-            val = (uint32_t)_src->Uint32Value(); 
+        {
+            val = (uint32_t)_src->Uint32Value();
         }
 
     } // namespace marshal

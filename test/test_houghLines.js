@@ -39,17 +39,7 @@ describe('cv', function() {
                 console.log(inspect(result));
                 done();
             });
-        });      
-
-        it('shouldReturnError (Empty input)', function(done) {
-
-            cloudcv.houghLines(null, function(error, result) { 
-                console.log(inspect(error));
-                console.log(inspect(result));
-                done();
-            });
-            
-        });  
+        });       
 
         it('shouldReturnError (Missing argument)', function(done) {
 
