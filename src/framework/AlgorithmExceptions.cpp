@@ -3,7 +3,7 @@
 namespace cloudcv
 {
     ArgumentException::ArgumentException(const std::string& argumentName, const std::string& message)
-        : std::runtime_error(nullptr)
+        : std::runtime_error("ArgumentException")
         , m_argumentName(argumentName)
         , m_message(message)
     {

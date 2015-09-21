@@ -47,7 +47,7 @@ namespace cloudcv
             }
 
             inline MarshalTypeMismatchException(const char * message)
-                : std::runtime_error(nullptr)
+                : std::runtime_error("MarshalTypeMismatchException")
                 , m_message(message)
             {
                 }
@@ -229,7 +229,6 @@ namespace cloudcv
                 size_t len = Nan::DecodeBytes(ar, Nan::ASCII);
                 val.resize(len);
                 Nan::DecodeWrite(const_cast<char*>(val.data()), len, ar, Nan::ASCII);
-                int d = 0;
             }
 
             template<typename OutputArchive>
