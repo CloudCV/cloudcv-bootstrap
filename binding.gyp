@@ -41,7 +41,11 @@
                 "src/framework/AlgorithmExceptions.hpp",
                 "src/framework/AlgorithmExceptions.cpp",
                 
-                "src/modules/HoughLines.cpp"
+                "src/modules/HoughLines.cpp",
+                "src/modules/HoughLines.hpp",
+
+                "src/modules/IntegralImage.hpp",
+                "src/modules/IntegralImage.cpp"
             ],
 
             'include_dirs': [

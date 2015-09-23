@@ -53,6 +53,36 @@ NAN_METHOD(getAlgorithms)
     info.GetReturnValue().Set(marshal(algorithms));
 }
 
+NAN_METHOD(getInfo)
+{
+    Nan::EscapableHandleScope scope;
+
+    if (info.Length() != 1)
+    {
+        LOG_TRACE_MESSAGE("First argument should be an algorithm name.");
+        Nan::ThrowError("First argument should be an algorithm name.");
+        return;
+    }
+
+    if (!info[0]->IsString())
+    {
+        LOG_TRACE_MESSAGE("First argument should be a string with algorithm name");
+        Nan::ThrowTypeError("First argument should be a string with algorithm name");
+        return;
+    }
+
+    std::string   algorithmName = marshal<std::string>(info[0].As<v8::String>());
+
+    auto algorithm = AlgorithmInfo::Get().find(algorithmName);
+    if (algorithm == AlgorithmInfo::Get().end())
+    {
+        info.GetReturnValue().Set(Nan::Null());
+        return;
+    }
+
+    info.GetReturnValue().Set(marshal(*algorithm->second.get()));
+}
+
 NAN_METHOD(processFunction)
 {
     Nan::HandleScope scope;
@@ -117,6 +147,10 @@ NAN_MODULE_INIT(RegisterModule)
     Set(target,
         New<v8::String>("processFunction").ToLocalChecked(),
         GetFunction(New<v8::FunctionTemplate>(processFunction)).ToLocalChecked());
+
+    Set(target,
+        New<v8::String>("getInfo").ToLocalChecked(),
+        GetFunction(New<v8::FunctionTemplate>(getInfo)).ToLocalChecked());
 }
 
 NODE_MODULE(cloudcv, RegisterModule);

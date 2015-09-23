@@ -45,16 +45,25 @@ app.set('port', process.env.PORT || 3000);
 app.set('title', 'cloudcv-bootstrap');
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
-app.set('view options', { pretty: true });
+app.set('view options', { pretty: true, layout: false });
 
 app.use(methodOverride());
 app.use(multer(multerOptions));
 app.use(cookieParser('optional secret string'));
 app.use(pmx.expressErrorHandler());
 app.use(express.static(path.join(__dirname, 'public')));
-
 // Static pages
+var api_docs = [];
+var algs = cv.getAlgorithms();
+for (var i = algs.length - 1; i >= 0; i--)
+{
+    var info = cv.getInfo(algs[i]);
+    api_docs.push(info);
+    console.log(info.name)
+};
+
 app.get('/', function (req, res) { res.render('index'); });
+app.get('/docs', function (req, res) { res.render('docs', { api: api_docs}); });
 
 function MapAnalyzeResult(analyzeResult) {
     var returnRes = {

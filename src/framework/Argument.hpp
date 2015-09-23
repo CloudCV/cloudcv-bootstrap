@@ -89,8 +89,13 @@ namespace cloudcv
         const std::string& name() const { return m_name; }
         const std::string& type() const { return m_type; }
 
+        //! Serialize argument information
+        virtual void serialize(serialization::SaveArchive& value) const = 0;
+
     protected:
         InputArgument(const std::string& name, const std::string& type)
+            : m_name(name)
+            , m_type(type)
         {
         }
 
@@ -168,6 +173,13 @@ namespace cloudcv
             return wrap_as_bind(marshal<T>(value));
         }
 
+        //! Serialize argument information
+        virtual void serialize(serialization::SaveArchive& value) const override
+        {
+            value & serialization::make_nvp("name", name());
+            value & serialization::make_nvp("type", type());
+        }
+
     protected:
         inline RequiredArgument(const char * name)
             : InputArgument(name, typeid(T).name())
@@ -195,6 +207,16 @@ namespace cloudcv
             return wrap_as_bind(validate(marshal<T>(value)));
         }
 
+        //! Serialize argument information
+        virtual void serialize(serialization::SaveArchive& value) const override
+        {
+            value & serialization::make_nvp("name", name());
+            value & serialization::make_nvp("type", type());
+
+            value & serialization::make_nvp("min", m_min);
+            value & serialization::make_nvp("max", m_max);
+            value & serialization::make_nvp("default", m_default);
+        }
     protected:
         inline RangedArgument(const char * name, T minValue, T defaultValue, T maxValue)
             : InputArgument(name, typeid(T).name())
@@ -220,4 +242,22 @@ namespace cloudcv
         T           m_max;
         T           m_default;
     };
+
+    template <typename T>
+    static inline std::pair<std::string, InputArgumentPtr> inputArgument()
+    {
+        return RequiredArgument<typename T::type>::Create(T::name());
+    }
+
+    template <typename T>
+    static inline std::pair<std::string, InputArgumentPtr> inputArgument(typename T::type minValue, typename T::type defaultValue, typename T::type maxValue)
+    {
+        return RangedArgument<typename T::type>::Create(T::name(), minValue, defaultValue, maxValue);
+    }
+
+    template <typename T>
+    static inline std::pair<std::string, OutputArgumentPtr> outputArgument()
+    {
+        return TypedOutputArgument<typename T::type>::Create(T::name());
+    }
 }

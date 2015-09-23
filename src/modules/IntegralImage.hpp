@@ -17,10 +17,10 @@
 
 namespace cloudcv
 {
-    class HoughLinesAlgorithmInfo : public AlgorithmInfo
+    class IntegralImageAlgorithmInfo : public AlgorithmInfo
     {
     public:
-        HoughLinesAlgorithmInfo();
+        IntegralImageAlgorithmInfo();
 
         AlgorithmPtr create() const override;
     };

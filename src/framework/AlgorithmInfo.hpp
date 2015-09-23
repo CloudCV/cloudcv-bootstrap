@@ -10,6 +10,7 @@
 #include <nan.h>
 
 #include "framework/Argument.hpp"
+#include "framework/marshal/marshal.hpp"
 
 namespace cloudcv
 {
@@ -40,8 +41,6 @@ namespace cloudcv
         static void Register(AlgorithmInfo * info);
         static const std::map<std::string, AlgorithmInfoPtr>& Get();
 
-        virtual Nan::FunctionCallback getFunction() const = 0;
-
 
     protected:
         AlgorithmInfo(
@@ -56,4 +55,51 @@ namespace cloudcv
 
         static std::map<std::string, AlgorithmInfoPtr> m_algorithms;
     };
+
+    namespace serialization
+    {
+        template<>
+        struct Serializer<InputArgument>
+        {
+            template<typename InputArchive>
+            static inline void load(InputArchive& ar, InputArgument& val) = delete;
+
+            template<typename OutputArchive>
+            static inline void save(OutputArchive& ar, const InputArgument& val)
+            {
+                val.serialize(ar);
+                //ar & make_nvp("name", val.name());
+                //ar & make_nvp("type", val.type());
+            }
+        };
+
+        template<>
+        struct Serializer<OutputArgument>
+        {
+            template<typename InputArchive>
+            static inline void load(InputArchive& ar, OutputArgument& val) = delete;
+
+            template<typename OutputArchive>
+            static inline void save(OutputArchive& ar, const OutputArgument& val)
+            {
+                ar & make_nvp("name", val.name());
+                ar & make_nvp("type", val.type());
+            }
+        };
+
+        template<>
+        struct Serializer<AlgorithmInfo>
+        {
+            template<typename InputArchive>
+            static inline void load(InputArchive& ar, AlgorithmInfo& val) = delete;
+
+            template<typename OutputArchive>
+            static inline void save(OutputArchive& ar, const AlgorithmInfo& val)
+            {
+                ar & make_nvp("name", val.name());
+                ar & make_nvp("inputArguments", val.inputArguments());
+                ar & make_nvp("outputArguments", val.outputArguments());
+            }
+        };
+    }
 }

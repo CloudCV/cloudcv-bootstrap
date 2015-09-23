@@ -66,7 +66,7 @@ namespace cloudcv
 
         cv::Mat getImage(int flags) override
         {
-            return cv::imdecode(cv::_InputArray(mImageData, mImageDataLen), flags);
+            return cv::imdecode(cv::_InputArray(mImageData, (int)mImageDataLen), flags);
         }
 
     private:

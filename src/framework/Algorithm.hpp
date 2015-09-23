@@ -39,44 +39,44 @@ namespace cloudcv
 
 
     protected:
+
+
         template <typename T>
-        static inline const T& getInput(const std::map<std::string, ParameterBindingPtr>& inputArgs,
-            const std::string& name)
+        static inline const typename T::type& getInput(const std::map<std::string, ParameterBindingPtr>& inputArgs)
         {
-            auto it = inputArgs.find(name);
+            auto it = inputArgs.find(T::name());
 
             if (inputArgs.end() == it)
             {
-                throw ArgumentException(name, "Cannot find parameter");
+                throw ArgumentException(T::name(), "Cannot find parameter");
             }
 
             auto binding = it->second;
 
-            auto * bind = dynamic_cast<const TypedBinding<T>*>(it->second.get());
+            auto * bind = dynamic_cast<const TypedBinding<typename T::type>*>(it->second.get());
             if (bind == nullptr)
             {
-                throw ArgumentTypeMismatchException(name, binding->type(), TypedBinding<T>::static_type());
+                throw ArgumentTypeMismatchException(T::name(), binding->type(), TypedBinding<typename T::type>::static_type());
             }
 
             return bind->get();
         }
 
         template <typename T>
-        static inline T& getOutput(const std::map<std::string, ParameterBindingPtr>& outputArgs,
-            const std::string& name)
+        static inline typename T::type& getOutput(const std::map<std::string, ParameterBindingPtr>& outputArgs)
         {
-            auto it = outputArgs.find(name);
+            auto it = outputArgs.find(T::name());
 
             if (outputArgs.end() == it)
             {
-                throw ArgumentException(name, "Cannot find parameter");
+                throw ArgumentException(T::name(), "Cannot find parameter");
             }
 
             auto binding = it->second;
 
-            auto * bind = dynamic_cast<TypedBinding<T>*>(it->second.get());
+            auto * bind = dynamic_cast<TypedBinding<typename T::type>*>(it->second.get());
             if (bind == nullptr)
-                throw ArgumentTypeMismatchException(name, binding->type(), TypedBinding<T>::static_type());
+                throw ArgumentTypeMismatchException(T::name(), binding->type(), TypedBinding<typename T::type>::static_type());
 
             return bind->get();
         }

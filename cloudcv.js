@@ -26,6 +26,9 @@ else
 
 var algorithms = nativeModule.getAlgorithms();
 
+module.exports.getInfo       = nativeModule.getInfo;
+module.exports.getAlgorithms = nativeModule.getAlgorithms;
+
 function registerAlgorithm(algName, index, array) {
   console.log('a[' + index + '] = ' + algName);
 

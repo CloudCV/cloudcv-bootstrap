@@ -167,6 +167,24 @@ namespace cloudcv
         BASIC_TYPE_SERIALIZER(double);
         BASIC_TYPE_SERIALIZER(bool);
 
+        template<typename T>
+        struct Serializer< std::shared_ptr<T> >
+        {
+            template<typename InputArchive>
+            static inline void load(InputArchive& ar, std::shared_ptr<T>& val)
+            {
+                val.reset(new T);
+                T& _val = *val.get();
+                ar & _val;
+            }
+
+            template<typename OutputArchive>
+            static inline void save(OutputArchive& ar, const std::shared_ptr<T>& val)
+            {
+                const T& _val = *val.get();
+                ar & _val;
+            }
+        };
 
         // serializer for std::vector
         template<typename T>
@@ -238,6 +256,8 @@ namespace cloudcv
             }
         };
 
+
+
         // serializer for std::map
         template<typename K, typename V>
         struct Serializer < std::map<K, V> >
@@ -258,9 +278,10 @@ namespace cloudcv
             static inline void save(OutputArchive& ar, const std::map<K, V>& map_val)
             {
                 v8::Local<v8::Array> result = Nan::New<v8::Array>();
-                for (typename std::map<K, V>::const_iterator i = map_val.begin(); i != map_val.end(); ++i)
+                size_t idx = 0;
+                for (typename std::map<K, V>::const_iterator i = map_val.begin(); i != map_val.end(); ++i, ++idx)
                 {
-                    result->Set(i, marshal(*i));
+                    result->Set(idx, marshal(*i));
                 }
                 ar = result;
             }

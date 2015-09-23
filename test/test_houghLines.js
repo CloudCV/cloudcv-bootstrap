@@ -21,6 +21,11 @@ describe('cv', function() {
 
     describe('houghLines', function() {
         
+        it('getInfo', function(done) {
+            console.log(JSON.stringify(cloudcv.getInfo('houghLines')));
+            done();
+        });
+
         //console.log(cloudcv.houghLines);
         it('process (File)', function(done) {
             cloudcv.houghLines({ "image": "test/data/opencv-logo.jpg"}, function(error, result) { 
