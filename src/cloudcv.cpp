@@ -13,6 +13,7 @@
 
 #include "framework/marshal/marshal.hpp"
 #include "modules/HoughLines.hpp"
+#include <nan-check.h>
 
 using namespace cloudcv;
 using Nan::GetFunction;
@@ -26,8 +27,8 @@ using Nan::Set;
 #include <stdlib.h>
 #include <unistd.h>
 
-
-void handler(int sig) {
+void handler(int sig)
+{
     void *array[10];
     size_t size;
 
@@ -57,78 +58,61 @@ NAN_METHOD(getInfo)
 {
     Nan::EscapableHandleScope scope;
 
-    if (info.Length() != 1)
+    std::string algorithmName;
+    std::string errorMessage;
+
+    if (Nan::Check(info).ArgumentsCount(1)
+        .Argument(0).IsString().Bind(algorithmName)
+        .Error(&errorMessage))
     {
-        LOG_TRACE_MESSAGE("First argument should be an algorithm name.");
-        Nan::ThrowError("First argument should be an algorithm name.");
+        auto algorithm = AlgorithmInfo::Get().find(algorithmName);
+        if (algorithm == AlgorithmInfo::Get().end())
+        {
+            info.GetReturnValue().Set(Nan::Null());
+            return;
+        }
+
+        info.GetReturnValue().Set(marshal(*algorithm->second.get()));
+    }
+    else
+    {
+        LOG_TRACE_MESSAGE(errorMessage);
+        Nan::ThrowTypeError(errorMessage.c_str());
         return;
     }
-
-    if (!info[0]->IsString())
-    {
-        LOG_TRACE_MESSAGE("First argument should be a string with algorithm name");
-        Nan::ThrowTypeError("First argument should be a string with algorithm name");
-        return;
-    }
-
-    std::string   algorithmName = marshal<std::string>(info[0].As<v8::String>());
-
-    auto algorithm = AlgorithmInfo::Get().find(algorithmName);
-    if (algorithm == AlgorithmInfo::Get().end())
-    {
-        info.GetReturnValue().Set(Nan::Null());
-        return;
-    }
-
-    info.GetReturnValue().Set(marshal(*algorithm->second.get()));
 }
 
 NAN_METHOD(processFunction)
 {
     Nan::HandleScope scope;
 
-    
-    if (info.Length() != 3)
+    std::string   algorithmName;
+    std::string   errorMessage;
+    v8::Local<v8::Object>   inputArguments;
+    v8::Local<v8::Function> resultsCallback;
+
+    if (Nan::Check(info).ArgumentsCount(3)
+        .Argument(0).IsString().Bind(algorithmName)
+        .Argument(1).IsObject().Bind(inputArguments)
+        .Argument(2).IsFunction().Bind(resultsCallback)
+        .Error(&errorMessage))
     {
-        LOG_TRACE_MESSAGE("Got " + std::to_string(info.Length()) + " arguments instead of 2");
-        Nan::ThrowTypeError("This function should be called with 3 arguments: algorithm name, input and callback");
+        auto algorithm = AlgorithmInfo::Get().find(algorithmName);
+        if (algorithm == AlgorithmInfo::Get().end())
+        {
+            v8::Local<v8::Value> argv[] = { Nan::Error("Algorithm not found"), Nan::Null() };
+            Nan::Callback(resultsCallback).Call(2, argv);
+            return;
+        }
+
+        ProcessAlgorithm(algorithm->second, inputArguments, resultsCallback);
+    }
+    else
+    {
+        LOG_TRACE_MESSAGE(errorMessage);
+        Nan::ThrowTypeError(errorMessage.c_str());
         return;
     }
-
-    if (!info[0]->IsString())
-    {
-        LOG_TRACE_MESSAGE("First argument should be a string with algorithm name");
-        Nan::ThrowTypeError("First argument should be a string with algorithm name");
-        return;
-    }
-
-    if (!info[1]->IsObject())
-    {
-        LOG_TRACE_MESSAGE("Second argument should be an object");
-        Nan::ThrowTypeError("Second argument should be an object");
-        return;
-    }
-
-    if (!info[2]->IsFunction())
-    {
-        LOG_TRACE_MESSAGE("Incorrect type of second argument");
-        Nan::ThrowTypeError("Thirds argument should be a function callback");
-        return;
-    }
-
-    std::string   algorithmName = marshal<std::string>(info[0].As<v8::String>());
-    v8::Local<v8::Object>   inputArguments = info[1].As<v8::Object>();
-    v8::Local<v8::Function> resultsCallback = info[2].As<v8::Function>();
-
-    auto algorithm = AlgorithmInfo::Get().find(algorithmName);
-    if (algorithm == AlgorithmInfo::Get().end())
-    {
-        v8::Local<v8::Value> argv[] = { Nan::Error("Algorithm not found"), Nan::Null() };
-        Nan::Callback(resultsCallback).Call(2, argv);
-        return;
-    }
-
-    ProcessAlgorithm(algorithm->second, inputArguments, resultsCallback);
 }
 
 

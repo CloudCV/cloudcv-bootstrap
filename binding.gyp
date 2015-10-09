@@ -12,7 +12,6 @@
 
             'sources': [ 
                 "src/cloudcv.cpp", 
-                "src/cloudcv.hpp",
 
                 "src/framework/Logger.hpp",                
                 "src/framework/ScopedTimer.hpp",                
@@ -51,6 +50,7 @@
             'include_dirs': [
               'src/',
               "<!(node -e \"require('nan')\")",
+              "<!(node -e \"require('nan-check')\")",
               "<!(node -e \"require('native-opencv').include_dirs()\")"
             ],
 
