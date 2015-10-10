@@ -55,9 +55,14 @@ namespace cloudcv
 
         static std::map<std::string, AlgorithmInfoPtr> m_algorithms;
     };
+}
 
-    namespace serialization
+namespace Nan 
+{
+    namespace marshal
     {
+        using namespace cloudcv;
+        
         template<>
         struct Serializer<InputArgument>
         {

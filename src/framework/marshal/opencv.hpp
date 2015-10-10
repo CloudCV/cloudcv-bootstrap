@@ -1,15 +1,18 @@
 #pragma once
 
 #include <nan.h>
+#include <nan-marshal.h>
 #include <opencv2/opencv.hpp>
 
-#include "framework/marshal/marshal.hpp"
+#include "framework/Logger.hpp"
 #include "framework/ImageView.hpp"
 
-namespace cloudcv
+namespace Nan
 {
-    namespace serialization
+    namespace marshal
     {
+        using namespace cloudcv;
+
         template <typename T>
         struct Serializer < cv::Size_<T> >
         {

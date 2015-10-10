@@ -124,9 +124,9 @@ namespace cloudcv
             return CreateImageSource(bufferOrString->ToObject());
 
         if (bufferOrString->IsString())
-            return CreateImageSource(marshal<std::string>(bufferOrString->ToString()));
+            return CreateImageSource(Nan::Marshal<std::string>(bufferOrString->ToString()));
 
-        throw serialization::MarshalTypeMismatchException("Invalid input argument type. Cannot create ImageSource");
+        throw std::runtime_error("Invalid input argument type. Cannot create ImageSource");
     }
 
     ImageView ImageView::CreateImageSource(v8::Local<v8::Object> imageBuffer)

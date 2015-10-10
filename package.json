@@ -18,7 +18,7 @@
     "method-override": "^2.3.1",
     "multer": "^0.1.7",
     "nan": "^2.0.9",
-    "nan-check": "0.0.1",
+    "nan-check": "0.0.2",
     "native-opencv": "3.0.0-b",
     "pmx": "^0.2.33",
     "request": "*",

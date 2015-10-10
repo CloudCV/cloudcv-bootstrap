@@ -52,7 +52,7 @@ NAN_METHOD(getAlgorithms)
         algorithms.push_back(alg.first);
     }
     
-    info.GetReturnValue().Set(marshal(algorithms));
+    info.GetReturnValue().Set(Nan::Marshal(algorithms));
 }
 
 NAN_METHOD(getInfo)
@@ -73,7 +73,7 @@ NAN_METHOD(getInfo)
             return;
         }
 
-        info.GetReturnValue().Set(marshal(*algorithm->second.get()));
+        info.GetReturnValue().Set(Nan::Marshal(*algorithm->second.get()));
     }
     else
     {

@@ -78,7 +78,7 @@ namespace cloudcv
 
             for (const auto& arg : m_output)
             {
-                outputArgument->Set(marshal(arg.first), arg.second->marshalFromNative());
+                outputArgument->Set(Nan::Marshal(arg.first), arg.second->marshalFromNative());
             }
 
             return scope.Escape(outputArgument);
@@ -105,7 +105,7 @@ namespace cloudcv
 
             for (auto arg : info->inputArguments())
             {
-                auto propertyName = marshal(arg.first);
+                auto propertyName = Nan::Marshal(arg.first);
                 v8::Local<v8::Value> argumentValue = Nan::Null();
 
                 if (inputArguments->HasRealNamedProperty(propertyName->ToString()))

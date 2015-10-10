@@ -8,9 +8,9 @@
 #include <node.h>
 #include <v8.h>
 #include <nan.h>
+#include <nan-marshal.h>
 
 #include "framework/ImageView.hpp"
-#include "framework/marshal/marshal.hpp"
 #include "framework/marshal/opencv.hpp"
 
 #pragma once
@@ -64,7 +64,7 @@ namespace cloudcv
         {
             Nan::EscapableHandleScope scope;
             const T& val = get();
-            return scope.Escape(marshal(val));
+            return scope.Escape(Nan::Marshal(val));
         }
 
     private:
@@ -90,7 +90,7 @@ namespace cloudcv
         const std::string& type() const { return m_type; }
 
         //! Serialize argument information
-        virtual void serialize(serialization::SaveArchive& value) const = 0;
+        virtual void serialize(Nan::marshal::SaveArchive& value) const = 0;
 
     protected:
         InputArgument(const std::string& name, const std::string& type)
@@ -170,14 +170,14 @@ namespace cloudcv
                 throw ArgumentBindException(name(), "Missing required argument");
             }
 
-            return wrap_as_bind(marshal<T>(value));
+            return wrap_as_bind(Nan::Marshal<T>(value));
         }
 
         //! Serialize argument information
-        virtual void serialize(serialization::SaveArchive& value) const override
+        virtual void serialize(Nan::marshal::SaveArchive& value) const override
         {
-            value & serialization::make_nvp("name", name());
-            value & serialization::make_nvp("type", type());
+            value & Nan::marshal::make_nvp("name", name());
+            value & Nan::marshal::make_nvp("type", type());
         }
 
     protected:
@@ -204,18 +204,20 @@ namespace cloudcv
                 return wrap_as_bind(m_default);
             }
 
-            return wrap_as_bind(validate(marshal<T>(value)));
+            return wrap_as_bind(validate(Nan::Marshal<T>(value)));
         }
 
         //! Serialize argument information
-        virtual void serialize(serialization::SaveArchive& value) const override
+        virtual void serialize(Nan::marshal::SaveArchive& value) const override
         {
-            value & serialization::make_nvp("name", name());
-            value & serialization::make_nvp("type", type());
+            using namespace Nan::marshal;
 
-            value & serialization::make_nvp("min", m_min);
-            value & serialization::make_nvp("max", m_max);
-            value & serialization::make_nvp("default", m_default);
+            value & make_nvp("name", name());
+            value & make_nvp("type", type());
+
+            value & make_nvp("min", m_min);
+            value & make_nvp("max", m_max);
+            value & make_nvp("default", m_default);
         }
     protected:
         inline RangedArgument(const char * name, T minValue, T defaultValue, T maxValue)

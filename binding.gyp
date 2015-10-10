@@ -47,6 +47,7 @@
             'include_dirs': [
               'src/',
               "<!(node -e \"require('nan')\")",
+              "<!(node -e \"require('nan-marshal')\")",
               "<!(node -e \"require('nan-check')\")",
               "<!(node -e \"require('native-opencv').include_dirs()\")"
             ],
