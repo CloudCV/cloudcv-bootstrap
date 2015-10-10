@@ -1,4 +1,5 @@
 build/
 log.txt
 npm-debug.log
+cloudcv-bootstrap.njsproj
 node_modules/
