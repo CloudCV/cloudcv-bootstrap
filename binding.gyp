@@ -20,14 +20,11 @@
                 "src/framework/marshal/marshal.hpp",
                 "src/framework/marshal/opencv.hpp",                
 
-                "src/framework/ImageSource.hpp",                
-                "src/framework/ImageSource.cpp",
+                "src/framework/ImageView.hpp",                
+                "src/framework/ImageView.cpp",
 
                 "src/framework/Job.hpp",                
                 "src/framework/Job.cpp",
-
-                "src/framework/NanCheck.hpp",
-                "src/framework/NanCheck.cpp",
 
                 "src/framework/Algorithm.hpp",
                 "src/framework/Algorithm.cpp",
@@ -51,6 +48,7 @@
             'include_dirs': [
               'src/',
               "<!(node -e \"require('nan')\")",
+              "<!(node -e \"require('nan-check')\")",
               "<!(node -e \"require('native-opencv').include_dirs()\")"
             ],
 

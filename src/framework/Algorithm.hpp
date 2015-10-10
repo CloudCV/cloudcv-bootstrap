@@ -13,7 +13,7 @@
 #include "framework/AlgorithmInfo.hpp"
 #include "framework/Argument.hpp"
 
-#include "framework/ImageSource.hpp"
+#include "framework/ImageView.hpp"
 #include "framework/marshal/marshal.hpp"
 #include "framework/marshal/opencv.hpp"
 

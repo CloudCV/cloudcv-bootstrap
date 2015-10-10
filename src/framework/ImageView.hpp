@@ -24,9 +24,9 @@ namespace cloudcv
     /**
      * @brief   Image source is accessor to image, stored in external resource.
      * @details This abstract class has particular implementations to retrieve 
-     *          image data from filesystem and image buffer.
+     *          image data from file system and image buffer.
      */
-    class ImageSource
+    class ImageView
     {
     public:
         /**
@@ -35,37 +35,41 @@ namespace cloudcv
          * @return  This function returns the loaded image. It can also return an 
          *          empty object if the image could not been loaded.
          */
-        cv::Mat getImage(int flags = cv::IMREAD_COLOR);
+        cv::Mat getImage(int flags) const;
+        
+        const cv::Mat& getImage() const;
+        cv::Mat& getImage();
 
-        virtual ~ImageSource() {}
+        virtual ~ImageView() {}
 
         /**
         * @brief Creates an ImageSource that points to particular file on filesystem.
         */
-        static ImageSource CreateImageSource(const std::string& filepath);
+        static ImageView CreateImageSource(const std::string& filepath);
 
         /**
         * @brief Creates an ImageSource that points to file's binary content that was
         *        loaded using Node.js.
         */
-        static ImageSource CreateImageSource(v8::Local<v8::Value> bufferOrString);
+        static ImageView CreateImageSource(v8::Local<v8::Value> bufferOrString);
 
         /**
         * @brief Creates an ImageSource that points to file's binary content that was
         *        loaded using Node.js.
         */
-        static ImageSource CreateImageSource(v8::Local<v8::Object> imageBuffer);
+        static ImageView CreateImageSource(v8::Local<v8::Object> imageBuffer);
 
         class ImageSourceImpl;
 
-        ImageSource();
+        ImageView();
 
     protected:
-        ImageSource(std::shared_ptr<ImageSourceImpl> impl);
+        ImageView(std::shared_ptr<ImageSourceImpl> impl);
 
 
     private:
         std::shared_ptr<ImageSourceImpl> m_impl;
     };
 
+    
 }

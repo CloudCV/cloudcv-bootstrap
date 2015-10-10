@@ -13,7 +13,7 @@
 
 #include "modules/IntegralImage.hpp"
 #include "framework/Algorithm.hpp"
-#include "framework/ImageSource.hpp"
+#include "framework/ImageView.hpp"
 #include "framework/Logger.hpp"
 
 namespace cloudcv
@@ -24,13 +24,13 @@ namespace cloudcv
         struct image
         {
             static const char * name() { return "image"; };
-            typedef ImageSource type;
+            typedef ImageView type;
         };
 
         struct integralImage
         {
             static const char * name() { return "integralImage"; };
-            typedef ImageSource type;
+            typedef ImageView type;
         };
         
 
@@ -40,10 +40,10 @@ namespace cloudcv
             ) override
         {
             TRACE_FUNCTION;
-            ImageSource _image = getInput<image>(inArgs);
-            ImageSource &_integralImage = getOutput<integralImage>(outArgs);
+            ImageView _image = getInput<image>(inArgs);
+            ImageView &_integralImage = getOutput<integralImage>(outArgs);
 
-            cv::integral(_image.getImage(), _integralImage.getImage());
+            cv::integral(_image.getImage(cv::IMREAD_GRAYSCALE), _integralImage.getImage());
         }
     };
 

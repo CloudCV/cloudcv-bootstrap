@@ -4,33 +4,17 @@ block content
 
   div.container
     h1 Welcome to CloudCV demonstration
-    
-    each algorithm in api
-      div.row
-        .col-md-8
-          h2 #{algorithm.name}
-          ul.nav.nav-tabs(role="tablist")
-            li.active(role="presentation")
-              a(href="#description" aria-controls="description" role="tab" data-toggle="tab") Description
-            li(role="presentation")
-              a(href="#inputArguments", aria-controls="inputArguments", role="tab", data-toggle="tab") Input arguments
-            li(role="presentation")
-              a(href="#outputArguments", aria-controls="outputArguments", role="tab", data-toggle="tab") Output arguments
-            li(role="presentation")
-              a(href="#raw", aria-controls="raw", role="tab", data-toggle="tab") Raw
 
-          .tab-content
-            div.tab-pane.active(role="tabpanel",id="description") Here comes algorithm description
-            
-            div.tab-pane(role="tabpanel",id="inputArguments")
-              ul
-              each argument in algorithm.inputArguments
-                li #{argument.key}
+    div.row
+      .col-md-2
+        .list-group
+        each algorithm in api
+          if (currentAlgorithm == algorithm.name)
+            a.list-group-item.active(href="/docs/" + algorithm.name) #{algorithm.name}
+          else
+            a.list-group-item(href="/docs/" + algorithm.name) #{algorithm.name}
 
-            div.tab-pane(role="tabpanel",id="outputArguments")
-              ul
-              each argument in algorithm.outputArguments
-                li #{argument.key}
-            div.tab-pane(role="tabpanel",id="raw")
-              pre 
-                = JSON.stringify(algorithm, undefined, 4)
+      .col-md-12
+         each algorithm in api
+          if (currentAlgorithm == algorithm.name)
+            p.load Here comes information of selected algorithm, which is #{algorithm.name}

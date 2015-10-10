@@ -13,6 +13,7 @@
 
 #include "framework/marshal/marshal.hpp"
 #include "modules/HoughLines.hpp"
+#include "modules/IntegralImage.hpp"
 
 using namespace cloudcv;
 using Nan::GetFunction;
@@ -139,6 +140,7 @@ NAN_MODULE_INIT(RegisterModule)
 #endif
 
     AlgorithmInfo::Register(new HoughLinesAlgorithmInfo);
+    AlgorithmInfo::Register(new IntegralImageAlgorithmInfo);
 
     Set(target,
         New<v8::String>("getAlgorithms").ToLocalChecked(),

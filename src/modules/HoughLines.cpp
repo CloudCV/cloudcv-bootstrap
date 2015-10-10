@@ -12,13 +12,13 @@
  **********************************************************************************/
 
 #include "framework/marshal/marshal.hpp"
-#include "framework/NanCheck.hpp"
 #include "framework/Job.hpp"
-#include "framework/ImageSource.hpp"
+#include "framework/ImageView.hpp"
 #include "framework/Logger.hpp"
 #include "framework/Algorithm.hpp"
 #include "modules/HoughLines.hpp"
 #include <vector>
+#include <nan-check.h>
 
 namespace cloudcv
 {
@@ -28,7 +28,7 @@ namespace cloudcv
         struct image
         {
             static const char * name() { return "image"; };
-            typedef ImageSource type;
+            typedef ImageView type;
         };
 
         struct rho
@@ -61,7 +61,7 @@ namespace cloudcv
             ) override
         {
             TRACE_FUNCTION;
-            ImageSource source = getInput<image>(inArgs);
+            ImageView source = getInput<image>(inArgs);
             const float _rho = getInput<rho>(inArgs);
             const float _theta = getInput<theta>(inArgs);
             const int _threshold = getInput<threshold>(inArgs);

@@ -9,7 +9,7 @@
 #include <v8.h>
 #include <nan.h>
 
-#include "framework/ImageSource.hpp"
+#include "framework/ImageView.hpp"
 #include "framework/marshal/marshal.hpp"
 #include "framework/marshal/opencv.hpp"
 
