@@ -12,7 +12,6 @@
 
             'sources': [ 
                 "src/cloudcv.cpp", 
-                "src/cloudcv.hpp",
 
                 "src/framework/Logger.hpp",                
                 "src/framework/ScopedTimer.hpp",                
