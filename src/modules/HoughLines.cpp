@@ -83,19 +83,17 @@ namespace cloudcv
             { inputArgument<HoughLinesAlgorithm::rho>(1, 2, 100) },
             { inputArgument<HoughLinesAlgorithm::theta>(1, 2, 100) },
             { inputArgument<HoughLinesAlgorithm::threshold>(1, 2, 255) }
-    },
-    {
-        { outputArgument<HoughLinesAlgorithm::lines>() }
-    }
-        )
+        },
         {
-    }
-
-        AlgorithmPtr HoughLinesAlgorithmInfo::create() const
-        {
-            return AlgorithmPtr(new HoughLinesAlgorithm());
+            { outputArgument<HoughLinesAlgorithm::lines>() }
         }
+        )
+    {
+    }
 
-
+    AlgorithmPtr HoughLinesAlgorithmInfo::create() const
+    {
+        return AlgorithmPtr(new HoughLinesAlgorithm());
+    }
 
 }

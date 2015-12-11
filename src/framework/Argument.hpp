@@ -9,6 +9,7 @@
 #include <v8.h>
 #include <nan.h>
 #include <nan-marshal.h>
+#include <type_traits>
 
 #include "framework/ImageView.hpp"
 #include "framework/marshal/opencv.hpp"
@@ -17,8 +18,42 @@
 
 #include <memory>
 
+
 namespace cloudcv
 {
+    template<class T>
+    struct is_fixed_array : std::false_type {
+    };
+
+    template<class T, std::size_t N>
+    struct is_fixed_array<T[N]> : std::true_type { 
+    };
+
+    template<class T, std::size_t N>
+    struct is_fixed_array< std::array<T,N> > : std::true_type {
+    };
+
+    template<class T>
+    struct is_vector : std::false_type {
+    };
+     
+    template<class T>
+    struct is_vector< std::vector<T> > : std::true_type {
+    };
+
+    template<class T> struct underlying_type {
+        typedef T value_type;
+    };
+
+    template<class T> struct underlying_type< std::vector<T> > {
+        typedef T value_type;
+    };
+
+    template<class T, size_t N> struct underlying_type<T[N]> {
+        typedef T value_type;
+    };
+     
+
     class InputArgument;
     class OutputArgument;
     class ParameterBinding;
@@ -117,6 +152,8 @@ namespace cloudcv
         const std::string& name() const { return m_name; }
         const std::string& type() const { return m_type; }
 
+        virtual void serialize(Nan::marshal::SaveArchive& value) const = 0;
+
     protected:
         OutputArgument(const std::string& name, const std::string& type)
             : m_name(name)
@@ -140,9 +177,34 @@ namespace cloudcv
             return std::make_pair(name, std::shared_ptr<OutputArgument>(new TypedOutputArgument<T>(name)));
         }
 
-        std::shared_ptr<ParameterBinding> bind() override
+        virtual std::shared_ptr<ParameterBinding> bind() override
         {
             return wrap_as_bind(T());
+        }
+
+        virtual void serialize(Nan::marshal::SaveArchive& value) const override
+        {
+            value & Nan::marshal::make_nvp("name", name());
+
+            using namespace std;
+
+            if (is_fixed_array<T>::value)
+            {
+                std::string elementType = typeid(typename underlying_type<T>::value_type).name();
+                value & Nan::marshal::make_nvp("type", std::string("array"));
+                //value & Nan::marshal::make_nvp("size", is_fixed_array<T>::size());
+                value & Nan::marshal::make_nvp("elementType", elementType);
+            }
+            else if (is_vector<T>::value)
+            {
+                std::string elementType = typeid(typename underlying_type<T>::value_type).name();
+                value & Nan::marshal::make_nvp("type", std::string("array"));
+                value & Nan::marshal::make_nvp("elementType", elementType);
+            }
+            else
+            {
+                value & Nan::marshal::make_nvp("type", type());                
+            }
         }
 
     protected:
@@ -192,7 +254,7 @@ namespace cloudcv
     class RangedArgument : public InputArgument
     {
     public:
-        static inline  std::pair<std::string, InputArgumentPtr> Create(const char * name, T minValue, T defaultValue, T maxValue)
+        static inline std::pair<std::string, InputArgumentPtr> Create(const char * name, T minValue, T defaultValue, T maxValue)
         {
             return std::make_pair(name, std::shared_ptr<InputArgument>(new RangedArgument<T>(name, minValue, defaultValue, maxValue)));
         }
@@ -219,6 +281,7 @@ namespace cloudcv
             value & make_nvp("max", m_max);
             value & make_nvp("default", m_default);
         }
+
     protected:
         inline RangedArgument(const char * name, T minValue, T defaultValue, T maxValue)
             : InputArgument(name, typeid(T).name())

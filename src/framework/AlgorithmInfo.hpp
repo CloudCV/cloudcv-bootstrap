@@ -39,6 +39,7 @@ namespace cloudcv
         virtual std::shared_ptr<Algorithm> create() const = 0;
 
         static void Register(AlgorithmInfo * info);
+
         static const std::map<std::string, AlgorithmInfoPtr>& Get();
 
 
@@ -73,8 +74,6 @@ namespace Nan
             static inline void save(OutputArchive& ar, const InputArgument& val)
             {
                 val.serialize(ar);
-                //ar & make_nvp("name", val.name());
-                //ar & make_nvp("type", val.type());
             }
         };
 
@@ -87,8 +86,7 @@ namespace Nan
             template<typename OutputArchive>
             static inline void save(OutputArchive& ar, const OutputArgument& val)
             {
-                ar & make_nvp("name", val.name());
-                ar & make_nvp("type", val.type());
+                val.serialize(ar);
             }
         };
 
@@ -101,8 +99,8 @@ namespace Nan
             template<typename OutputArchive>
             static inline void save(OutputArchive& ar, const AlgorithmInfo& val)
             {
-                ar & make_nvp("name", val.name());
-                ar & make_nvp("inputArguments", val.inputArguments());
+                ar & make_nvp("name",            val.name());
+                ar & make_nvp("inputArguments",  val.inputArguments());
                 ar & make_nvp("outputArguments", val.outputArguments());
             }
         };
