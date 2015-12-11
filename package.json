@@ -25,6 +25,7 @@
     "nan-check": "0.0.6",
     "nan-marshal": "0.0.5",
     "native-opencv": "3.0.0-b",
+    "node-gyp": "^3.2.1",
     "pmx": "^0.2.33",
     "request": "*",
     "validator": "^3.28.0",
