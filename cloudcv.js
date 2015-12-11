@@ -13,7 +13,26 @@
 
 var fs = require('fs');
 
-var DEBUG_ADDON = "./build/Debug/cloudcv";
-var RELEASE_ADDON = "./build/Release/cloudcv";
+var DEBUG_ADDON =  __dirname + "/build/Debug/cloudcv.node";
+var RELEASE_ADDON = __dirname + "/build/Release/cloudcv.node";
 
-module.exports = require(RELEASE_ADDON);
+
+if (fs.existsSync(RELEASE_ADDON))
+    var nativeModule = require(RELEASE_ADDON);
+else if (fs.existsSync(DEBUG_ADDON))
+    var nativeModule = require(DEBUG_ADDON);
+else
+    throw new Error("Cannot find CloudCV addon");
+
+var algorithms = nativeModule.getAlgorithms();
+
+module.exports.getInfo       = nativeModule.getInfo;
+module.exports.getAlgorithms = nativeModule.getAlgorithms;
+
+function registerAlgorithm(algName, index, array) {
+  console.log('a[' + index + '] = ' + algName);
+
+  module.exports[algName] = function(args, callback) { nativeModule.processFunction(algName, args, callback); };
+} 
+
+algorithms.forEach(registerAlgorithm);

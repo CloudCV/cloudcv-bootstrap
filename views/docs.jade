@@ -1,0 +1,20 @@
+extends layout
+
+block content  
+
+  div.container
+    h1 Welcome to CloudCV demonstration
+
+    div.row
+      .col-md-2
+        .list-group
+        each algorithm in api
+          if (currentAlgorithm == algorithm.name)
+            a.list-group-item.active(href="/docs/" + algorithm.name) #{algorithm.name}
+          else
+            a.list-group-item(href="/docs/" + algorithm.name) #{algorithm.name}
+
+      .col-md-12
+         each algorithm in api
+          if (currentAlgorithm == algorithm.name)
+            p.load Here comes information of selected algorithm, which is #{algorithm.name}

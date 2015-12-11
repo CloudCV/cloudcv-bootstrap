@@ -12,52 +12,64 @@
 **********************************************************************************/
 #pragma once
 
-#include <stdlib.h>
 #include <opencv2/opencv.hpp>
+#include <memory>
+#include <node.h>
+#include <v8.h>
 #include <nan.h>
 
 
 namespace cloudcv
 {
     /**
-     * @brief A wrapper around cv::Mat type that is returned in callbacks to Node.js.
-     * @details This class provide basic methods to get image dimension and type, but 
-     *          it's goal to allow 'export' binary data to Jpg/Png/Webp/Json formats.
+     * @brief   Image source is accessor to image, stored in external resource.
+     * @details This abstract class has particular implementations to retrieve 
+     *          image data from file system and image buffer.
      */
-	class ImageView : public node::ObjectWrap
+    class ImageView
     {
     public:
-        explicit ImageView(const cv::Mat& image);
-        ~ImageView() {}
-    
-        static NAN_METHOD(New);
-
-        static void Init(v8::Handle<v8::Object> exports);
-        static v8::Local<v8::Value> ViewForImage(cv::Mat image);
-
-        static v8::Persistent<v8::FunctionTemplate> constructor;
-    private:
+        /**
+         * @brief   Main method to retrieve image. This method will work synchronously.
+         * @details Returns the image stored in the ImageSource object.
+         * @return  This function returns the loaded image. It can also return an 
+         *          empty object if the image could not been loaded.
+         */
+        cv::Mat getImage(int flags) const;
         
-        static NAN_METHOD(Thumbnail);
+        const cv::Mat& getImage() const;
+        cv::Mat& getImage();
 
-        static NAN_METHOD(AsJpegStream);
-        static NAN_METHOD(AsJpegDataUri);
+        virtual ~ImageView() {}
 
-        static NAN_METHOD(AsPngStream);
-        static NAN_METHOD(AsPngDataUri);
+        /**
+        * @brief Creates an ImageSource that points to particular file on filesystem.
+        */
+        static ImageView CreateImageSource(const std::string& filepath);
 
-        static NAN_METHOD(AsObject);
+        /**
+        * @brief Creates an ImageSource that points to file's binary content that was
+        *        loaded using Node.js.
+        */
+        static ImageView CreateImageSource(v8::Local<v8::Value> bufferOrString);
 
-        static NAN_METHOD(Width);
-        static NAN_METHOD(Height);
-        static NAN_METHOD(Channels);
-        static NAN_METHOD(Type);
-        static NAN_METHOD(Stride);
+        /**
+        * @brief Creates an ImageSource that points to file's binary content that was
+        *        loaded using Node.js.
+        */
+        static ImageView CreateImageSource(v8::Local<v8::Object> imageBuffer);
+
+        class ImageSourceImpl;
+
+        ImageView();
+
+    protected:
+        ImageView(std::shared_ptr<ImageSourceImpl> impl);
+
 
     private:
-        cv::Mat mImage;    
+        std::shared_ptr<ImageSourceImpl> m_impl;
     };
 
-    NAN_METHOD(loadImage); // Accessible via cloucv.loadImage
+    
 }
-

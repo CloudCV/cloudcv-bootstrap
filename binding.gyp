@@ -12,65 +12,71 @@
 
             'sources': [ 
                 "src/cloudcv.cpp", 
-                "src/cloudcv.hpp",
 
                 "src/framework/Logger.hpp",                
                 "src/framework/ScopedTimer.hpp",                
 
                 "src/framework/marshal/marshal.hpp",
                 "src/framework/marshal/opencv.hpp",                
-                
+
                 "src/framework/ImageView.hpp",                
                 "src/framework/ImageView.cpp",
-
-                "src/framework/ImageSource.hpp",                
-                "src/framework/ImageSource.cpp",
 
                 "src/framework/Job.hpp",                
                 "src/framework/Job.cpp",
 
-                "src/framework/Async.hpp",
-                "src/framework/Async.cpp",
-                    
-                "src/framework/NanCheck.hpp",
-                "src/framework/NanCheck.cpp",
+                "src/framework/Algorithm.hpp",
+                "src/framework/Algorithm.cpp",
+
+                "src/framework/AlgorithmInfo.hpp",
+                "src/framework/AlgorithmInfo.cpp",
+
+                "src/framework/Argument.hpp",
+                "src/framework/Argument.cpp",
+
+                "src/framework/AlgorithmExceptions.hpp",
+                "src/framework/AlgorithmExceptions.cpp",
                 
-                "src/modules/common/ScopedTimer.hpp", 
+                "src/modules/HoughLines.cpp",
+                "src/modules/HoughLines.hpp",
 
-                "src/modules/analyze/AnalyzeImageAlgorithm.cpp", 
-                "src/modules/analyze/AnalyzeImageAlgorithm.hpp", 
-                "src/modules/analyze/AnalyzeImageBinding.cpp", 
-
-                "src/modules/buildInformation/buildInformation.cpp", 
-
-                "src/modules/cameraCalibration/CameraCalibrationBinding.cpp", 
-                "src/modules/cameraCalibration/CameraCalibrationAlgorithm.hpp", 
-                "src/modules/cameraCalibration/CameraCalibrationAlgorithm.cpp", 
+                "src/modules/IntegralImage.hpp",
+                "src/modules/IntegralImage.cpp"
             ],
 
             'include_dirs': [
               'src/',
               "<!(node -e \"require('nan')\")",
+              "<!(node -e \"require('nan-marshal')\")",
+              "<!(node -e \"require('nan-check')\")",
               "<!(node -e \"require('native-opencv').include_dirs()\")"
             ],
 
             'libraries': [
-                ">!(node -e \"require('native-opencv').libraries(false)\")"
+                ">!(node -e \"require('native-opencv').libraries(true)\")"
             ],
 
             'configurations': {
                 'Debug': {
                     'msvs_settings': {
                         'VCCLCompilerTool': {
+                            'RuntimeTypeInfo': 'true',
                             'ExceptionHandling': '2',  # /EHsc
                         },
+                        'VCLinkerTool': {
+                            'GenerateDebugInformation': 'true',
+                        }
                     },
                 },
                 'Release': {
                     'msvs_settings': {
                         'VCCLCompilerTool': {
+                            'RuntimeTypeInfo': 'true',
                             'ExceptionHandling': '2',  # /EHsc
                         },
+                        'VCLinkerTool': {
+                            'GenerateDebugInformation': 'true',
+                        }
                     },
                 },
             },

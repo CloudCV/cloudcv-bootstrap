@@ -40,16 +40,18 @@ inline std::ostream& operator<<(std::ostream& out, const cv::Rect_<T>& res) {
     return out << "cv::Rect { x:" << res.x << "; y:" << res.y << ", width:" << res.width << ", height:" << res.height << "}";
 }
 
-#if defined(_DEBUG) || defined(DEBUG)
-#if _MSC_VER
-#define TRACE_FUNCTION FunctionTraceLoggerCookie(__FUNCTION__)
+
+#if 0 && (defined(_DEBUG) || defined(DEBUG))
+    #if _MSC_VER
+        #define TRACE_FUNCTION FunctionTraceLoggerCookie(__FUNCTION__)
+    #else
+        #define TRACE_FUNCTION FunctionTraceLoggerCookie(__PRETTY_FUNCTION__)
+    #endif
+
+    #define LOG_TRACE_MESSAGE(x) std::cout << x << std::endl
 #else
-#define TRACE_FUNCTION FunctionTraceLoggerCookie(__PRETTY_FUNCTION__)
-#endif
-#define LOG_TRACE_MESSAGE(x) std::cout << x << std::endl
-#else
-#define TRACE_FUNCTION          static_cast<void>(0)
-#define LOG_TRACE_MESSAGE(x)    static_cast<void>(0)
+    #define TRACE_FUNCTION          static_cast<void>(0)
+    #define LOG_TRACE_MESSAGE(x)    static_cast<void>(0)
 #endif
 
 
