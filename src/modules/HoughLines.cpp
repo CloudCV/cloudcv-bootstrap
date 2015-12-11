@@ -70,7 +70,7 @@ namespace cloudcv
             std::vector<cv::Point2f> &_lines = getOutput<lines>(outArgs);
 
             cv::HoughLines(inputImage, _lines, _rho, _theta, _threshold);
-            LOG_TRACE_MESSAGE("Detected " << lines.size() << " lines");
+            LOG_TRACE_MESSAGE("Detected " << _lines.size() << " lines");
         }
     };
 

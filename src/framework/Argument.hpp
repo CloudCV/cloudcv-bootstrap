@@ -229,7 +229,7 @@ namespace cloudcv
         {
             if (value->IsUndefined() || value->IsNull())
             {
-                throw ArgumentBindException(name(), "Missing required argument");
+                throw ArgumentBindException(name(), "Missing required argument \"" + name() + "\"");
             }
 
             return wrap_as_bind(Nan::Marshal<T>(value));

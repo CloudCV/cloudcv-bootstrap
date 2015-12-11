@@ -120,6 +120,8 @@ namespace cloudcv
 
     ImageView ImageView::CreateImageSource(v8::Local<v8::Value> bufferOrString)
     {
+        LOG_TRACE_MESSAGE("ImageView::CreateImageSource");
+        
         if (node::Buffer::HasInstance(bufferOrString))
             return CreateImageSource(bufferOrString->ToObject());
 

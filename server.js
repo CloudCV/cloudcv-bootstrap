@@ -12,6 +12,7 @@
  **********************************************************************************/
  
 var pmx = require('pmx'); pmx.init();
+var util = require('util');
 
 var express = require('express')
   , http = require('http')
@@ -30,7 +31,6 @@ var express = require('express')
   , inspect = require('util').inspect
   , swagger = require("./lib/swaggerSpec.js");
   ;
-
 var app = express();
 
 var multerOptions = {
@@ -48,6 +48,7 @@ app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 app.set('view options', { pretty: true, layout: false });
 
+//app.use(json); 
 app.use(methodOverride());
 app.use(multer(multerOptions));
 app.use(cookieParser('optional secret string'));
@@ -75,6 +76,57 @@ app.get('/docs/:algorithmName', function (req, res) { res.render('docs', { api: 
 
 // Specifications:
 app.get('/swagger.json',  function (req, res) { res.json(swagger.getSpec(algs)); });
+
+// Bind handlers:
+function createHandler(method) {
+  return function(req, res) {
+    console.log('Called handler for ' + method);
+    console.log(util.inspect(req.body));
+    console.log(util.inspect(req.params));
+
+    var inArgs = new Object();
+
+    Object.keys(req.params).forEach(function(key) {
+      console.log(key +" is " + req.params[key] );
+      inArgs[key] = req.params[key];
+    });
+
+    Object.keys(req.files).forEach(function(key) {
+      console.log(key +" is " + req.files[key] );
+      inArgs[key] = req.files[key].buffer;
+    });
+
+    /*
+    console.log('Arguments:', util.inspect(inArgs));
+    Object.keys(req.body).forEach(function(key) {
+      console.log(key +" is " + req.body[key] )
+      inArgs[key] = req.body[key];
+    });
+    */
+    
+    console.log('Arguments:', util.inspect(inArgs));
+    cv[method](inArgs, function(error, result) {
+      if (error) {
+        console.log('Error returned');        
+        res.send(error);
+      }
+      else if (result) {
+        console.log('Error returned');        
+        res.send(result);        
+      }
+      res.end();
+    });
+  };
+}
+
+for (i = algs.length - 1; i >= 0; i--)
+{
+  var info = cv.getInfo(algs[i]);
+  var algorithmName = info.name;
+
+  app.post('/api/' + algorithmName, createHandler(algorithmName));
+}
+
 
 // Peace to everyone!
 app.use(function(req, res, next) {

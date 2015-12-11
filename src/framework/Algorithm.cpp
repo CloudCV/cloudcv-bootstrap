@@ -69,8 +69,7 @@ namespace cloudcv
         // safe to use V8 functions again. Don't forget the HandleScope!
         v8::Local<v8::Value> CreateCallbackResult() override
         {
-            TRACE_FUNCTION;
-            
+            TRACE_FUNCTION;            
 
             Nan::EscapableHandleScope scope;
 
@@ -140,21 +139,22 @@ namespace cloudcv
         {
             LOG_TRACE_MESSAGE(er.what());
             std::string error = er.what();
-            v8::Local<v8::Value> argv[] = { Nan::Error(error.c_str()), Nan::Null() };
+            v8::Local<v8::Value> argv[] = { Nan::Marshal(error), Nan::Null() };
             Nan::Callback(resultsCallback).Call(2, argv);
         }
         catch (ArgumentException& er)
         {
+            Nan::EscapableHandleScope scope;
             LOG_TRACE_MESSAGE(er.what());
             std::string error = er.what();
-            v8::Local<v8::Value> argv[] = { Nan::Error(error.c_str()), Nan::Null() };
-            Nan::Callback(resultsCallback).Call(2, argv);
+            v8::Local<v8::Value> argv[] = { scope.Escape(Nan::Marshal(error)), Nan::Null() };
+            Nan::Callback(resultsCallback).Call(2, (argv));
         }
         catch (std::runtime_error& er)
         {
             LOG_TRACE_MESSAGE(er.what());
             std::string error = er.what();
-            v8::Local<v8::Value> argv[] = { Nan::Error(error.c_str()), Nan::Null() };
+            v8::Local<v8::Value> argv[] = { Nan::Marshal(error), Nan::Null() };
             Nan::Callback(resultsCallback).Call(2, argv);
         }
         catch (...)
