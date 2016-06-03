@@ -12,7 +12,7 @@ This project lets you to quickly prototype a REST API in a Node.js for a image p
 
 ```bash
 # Get the latest snapshot 
-$ git clone —depth=1 https://github.com/CloudCV/cloudcv-bootstrap.git myproject
+$ git clone —depth=1 --branch 0.0.1 https://github.com/CloudCV/cloudcv-bootstrap.git myproject
 $ cd myproject 
 $ git remote rm origin 
 
@@ -44,11 +44,9 @@ npm test
 ## Questions?
 
 Explore the series of blog posts:
- 1. http://computer-vision-talks.com/articles/introducing-cloudcv-bootstrap/
- 2. http://computer-vision-talks.com/articles/how-to-convert-args-from-js-to-cpp/
- 3. http://computer-vision-talks.com/articles/2013-09-05-cloudcv/
- 4. http://computer-vision-talks.com/articles/2013-08-27-connecting-opencv-and-node-js-inside-cloud9-ide/
- 5. http://computer-vision-talks.com/articles/2013-08-19-cloud-image-processing-using-opencv-and-node-js/
+ 1. https://computer-vision-talks.com/introducing-cloudcv-bootstrap/
+ 3. https://computer-vision-talks.com/marshalling-data-in-nodejs-c-modules/
+ 4. https://computer-vision-talks.com/how-to-debug-nodejs-addons-in-visual-studio/
 
 CloudCV bootstrap is free software/open source, and is distributed under the [BSD license](http://opensource.org/licenses/BSD-3-Clause). It contains third-party code, see the included `third-party.txt` file for the license information on third-party code.
 
